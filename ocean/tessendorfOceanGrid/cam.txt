@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<project name="Tessendorf Waves">
+    <assets>
+        <viewports>
+            <viewport name="MainViewport">
+                <CLEAR_COLOR x="1" y="1" z="1" w="0" />
+                <SIZE x="3747" y="2117" />
+            </viewport>
+        </viewports>
+        <cameras>
+            <camera name="MainCamera">
+                <ELEVATION_ANGLE value="-0.805422" />
+                <LOOK_AT_POINT x="10.3033" y="132.481" z="-170.915" w="1" />
+                <POSITION x="10.3277" y="133.202" z="-171.607" w="1" />
+                <VIEW x="-0.0243968" y="-0.721123" z="0.692378" w="0" />
+                <ZX_ANGLE value="-0.0352217" />
+                <viewport name="MainViewport" />
+            </camera>
+        </cameras>
+        <lights>
+            <light name="Sun">
+                <DIRECTION x="1" y="-1.5" z="-2" w="0" />
+            </light>
+        </lights>
+        <materialLibs>
+            <materialLib filename="cam-Ocean.mlib" />
+            <materialLib filename="cam-ocean#oceanGrid.mlib" />
+        </materialLibs>
+    </assets>
+    <pipelines />
+</project>
