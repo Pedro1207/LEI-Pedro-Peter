@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf8">
+    <meta charset="utf8" />
 
     <title>WebGL Ocean</title>
     <style>
       body {
-          margin: 0;
-          font-family: monospace;
+        margin: 0;
+        font-family: monospace;
       }
       canvas {
-          display: block;
-          width: 100vw;
-          height: 100vh;
+        display: block;
+        width: 100vw;
+        height: 100vh;
       }
       #b {
         position: absolute;
@@ -27,1390 +27,2199 @@
     <canvas id="c"></canvas>
   </body>
   <script id="vs" type="notjs">
-#version 300 es
+    #version 300 es
 
-precision mediump float;
+    precision highp float;
 
-in vec4 position;
-in vec2 texcoord;
-    
-out vec2 texCoordV;
-    
-void main() {
-  
-  gl_Position = position;
-  texCoordV = texcoord;
-}
+    in vec4 position;
+    in vec2 texcoord;
 
+    out vec2 texCoordV;
+
+    void main() {
+
+      gl_Position = position;
+      texCoordV = texcoord;
+    }
   </script>
   <script id="h0kfs" type="notjs">
-#version 300 es
+    #version 300 es
 
-precision mediump float;
+    precision highp float;
 
-in vec2 texCoordV;
+    in vec2 texCoordV;
 
-#define M_PI 3.1415926535897932384626433832795
-#define G 9.81
+    #define M_PI 3.1415926535897932384626433832795
+    #define G 9.81
 
 
-uniform int width;
-uniform int L;
+    uniform int width;
+    uniform int L;
 
-uniform vec2 windDir;
-uniform float windSpeed;
-uniform float depth;
+    uniform vec2 windDir;
+    uniform float windSpeed;
+    uniform float depth;
 
-uniform int randomDistribution; // Normal distribution
-uniform int spectrum;
-uniform int dispersionMode;
-uniform int directionalMode;
-uniform float spectrumScale;
+    uniform int randomDistribution; // Normal distribution
+    uniform int spectrum;
+    uniform int dispersionMode;
+    uniform int directionalMode;
+    uniform float spectrumScale;
 
-uniform float fetch;
-uniform float swell;
-uniform float Hs;
+    uniform float fetch;
+    uniform float swell;
+    uniform float Hs;
 
-// JONSWAP parameters
-uniform float JONSWAP_gamma;
-uniform float JONSWAP_sigmaA;
-uniform float JONSWAP_sigmaB; 
+    // JONSWAP parameters
+    uniform float JONSWAP_gamma;
+    uniform float JONSWAP_sigmaA;
+    uniform float JONSWAP_sigmaB;
 
-// Bretschneider Param
-uniform float Bretschneider_wm;
+    // Bretschneider Param
+    uniform float Bretschneider_wm;
 
-// Ochi parameters
-uniform float Ochi_lambda1, Ochi_wm1, Ochi_Hs1, Ochi_lambda2, Ochi_wm2, Ochi_Hs2;
+    // Ochi parameters
+    uniform float Ochi_lambda1, Ochi_wm1, Ochi_Hs1, Ochi_lambda2, Ochi_wm2, Ochi_Hs2;
 
 
-uniform int propagate;
+    uniform int propagate;
 
-layout (location = 0) out vec4 h0k; 
+    layout (location = 0) out vec4 h0k;
 
 
-//http://amindforeverprogramming.blogspot.com/2013/07/random-floats-in-glsl-330.html
-uint hash( uint x ) {
-    x += ( x << 10u );
-    x ^= ( x >>  6u );
-    x += ( x <<  3u );
-    x ^= ( x >> 11u );
-    x += ( x << 15u );
-    return x;
-}
+    //http://amindforeverprogramming.blogspot.com/2013/07/random-floats-in-glsl-330.html
+    uint hash( uint x ) {
+        x += ( x << 10u );
+        x ^= ( x >>  6u );
+        x += ( x <<  3u );
+        x ^= ( x >> 11u );
+        x += ( x << 15u );
+        return x;
+    }
 
-// Compound versions of the hashing algorithm I whipped together.
-uint hash( uvec2 v ) { return hash( v.x ^ hash(v.y)                         ); }
+    // Compound versions of the hashing algorithm I whipped together.
+    uint hash( uvec2 v ) { return hash( v.x ^ hash(v.y)                         ); }
 
-// Construct a float with half-open range [0:1] using low 23 bits.
-// All zeroes yields 0.0, all ones yields the next smallest representable value below 1.0.
-float floatConstruct( uint m ) {
-    const uint ieeeMantissa = 0x007FFFFFu; // binary32 mantissa bitmask
-    const uint ieeeOne      = 0x3F800000u; // 1.0 in IEEE binary32
+    // Construct a float with half-open range [0:1] using low 23 bits.
+    // All zeroes yields 0.0, all ones yields the next smallest representable value below 1.0.
+    float floatConstruct( uint m ) {
+        const uint ieeeMantissa = 0x007FFFFFu; // binary32 mantissa bitmask
+        const uint ieeeOne      = 0x3F800000u; // 1.0 in IEEE binary32
 
-    m &= ieeeMantissa;                     // Keep only mantissa bits (fractional part)
-    m |= ieeeOne;                          // Add fractional part to 1.0
+        m &= ieeeMantissa;                     // Keep only mantissa bits (fractional part)
+        m |= ieeeOne;                          // Add fractional part to 1.0
 
-    float  f = uintBitsToFloat( m );       // Range [1:2]
-    return f - 1.0;                        // Range [0:1]
-}
-
-// Pseudo-random value in half-open range [0:1].
-float random( uvec2  v ) { return floatConstruct(hash(v)); }
+        float  f = uintBitsToFloat( m );       // Range [1:2]
+        return f - 1.0;                        // Range [0:1]
+    }
 
+    // Pseudo-random value in half-open range [0:1].
+    float random( uvec2  v ) { return floatConstruct(hash(v)); }
 
-//#define TEXTURE_GRADS
 
-//#define USE_NOISE
+    //#define TEXTURE_GRADS
 
-#define COMPUTE_SKY_FOR_REFLECTION
+    //#define USE_NOISE
 
-// foam
-#define NO_FOAM 0
-#define USE_JACOBIAN 1
-#define USE_VERTICAL_ACCELERATION 2
-#define FOAM USE_JACOBIAN
+    #define COMPUTE_SKY_FOR_REFLECTION
 
-//#define TESTING_COLOR_DEPTHS
-//#define TESTING_COLORS	
+    // foam
+    #define NO_FOAM 0
+    #define USE_JACOBIAN 1
+    #define USE_VERTICAL_ACCELERATION 2
+    #define FOAM USE_JACOBIAN
 
-#define M_PI 3.1415926535897932384626433832795
-#define G 9.81
+    //#define TESTING_COLOR_DEPTHS
+    //#define TESTING_COLORS
 
-#define RANDOM_UNIFORM 0
-// normal dist can be computed with Box-Muller transform
-#define RANDOM_NORMAL 1
-// if X is from a normal distribution, then exp(X) follows a log distribution
-#define RANDOM_LOG 2
-// if X is uniform on [0,1] then −log(X) follows an exponential distribution
-#define RANDOM_EXP 3
+    #define M_PI 3.1415926535897932384626433832795
+    #define G 9.81
 
+    #define RANDOM_UNIFORM 0
+    // normal dist can be computed with Box-Muller transform
+    #define RANDOM_NORMAL 1
+    // if X is from a normal distribution, then exp(X) follows a log distribution
+    #define RANDOM_LOG 2
+    // if X is uniform on [0,1] then −log(X) follows an exponential distribution
+    #define RANDOM_EXP 3
 
-#define DISPERSION_DEEP 0
-#define DISPERSION_SHALLOW 1
-#define DISPERSION_ CAPILLARY 2 
-
-
-#define DIRECTIONAL_COS_POWER 0
-#define DIRECTIONAL_MITSUYASU 1
-#define DIRECTIONAL_HASSELMANN 2
-#define DIRECTIONAL_DONNELAN_BANNER 3
-#define DIRECTIONAL_HORVATH_MITSUYASU 4
-#define DIRECTIONAL_HORVATH_HASSELMANN 5
-#define DIRECTIONAL_HORVATH_DONNELAN_BANNER 6
-
-#define SPECTRUM_PHILLIPS 0
-#define SPECTRUM_PIERSON_MOSKOWITZ 1
-#define SPECTRUM_JONSWAP 2
-#define SPECTRUM_DONNELAN_JONSWAP 3
-#define SPECTRUM_TMA 4
-#define SPECTRUM_UNIFIED 5
-#define SPECTRUM_PIERSON_MOSKOWITZ_HS 6
-#define SPECTRUM_BRETSCHNEIDER 7
-#define SPECTRUM_OCHI 8
-#define SPECTRUM_OCHI_HS 9
-
-
-
-// ------------------------------
-// Dispersion
-// ------------------------------
-
-float getDispersionW(float k, float depth, int dispersionMode) {
-
-	float tension = 0.074; // N/m
-	float density = 1000.0; // Kg/m3
-	
-	// deep waters
-	if (dispersionMode == DISPERSION_DEEP) 
-		return sqrt(k * G);
-	// shallow waters	
-	else if (dispersionMode == DISPERSION_SHALLOW)	
-		return sqrt(k * G * tanh(k*depth));
-	else  // DISPERSION_ CAPILLARY
-		return sqrt((G * k + pow(k,3.0) * tension/density) * tanh(k*depth));
-}
-
-
-float getDispersionDerivative(float k, float depth, int dispersionMode) {
-
-	float tension = 0.074; // N/m
-	float density = 1000.0; // Kg/m3
-	float w = getDispersionW(k, depth, dispersionMode);
-	
-	// deep waters
-	if (dispersionMode == DISPERSION_DEEP) 
-		return G * 0.5f / w; 
-	// shallow waters	
-	else if (dispersionMode == DISPERSION_SHALLOW) {
-		float dk = depth * k;
-		float th = tanh(dk);
-		return 0.5f * sqrt(9.81f / (k*th)) * (th + dk*(1.0 - th*th));
-	}
-	else { // DISPERSION_ CAPILLARY
-		float dk = depth * k;
-		float th = tanh(dk);
-		float b = tension/density;
-		return 0.5f * ((9.81f + 3.0 * b*k*k)*th + dk * (k*k*b + 9.81f) * pow(1.0f / cosh(dk), 2.0)) / w;
-	}
-}
-
-
-
-
-
-
-// ------------------------------
-// Directional Spreaading
-// ------------------------------
-
-// Taken from:
-// https://buildbot.libretro.com/assets/frontend/bundle/shaders/shaders_glsl/crt/shaders/crt-royale/port-helpers/special-functions.h
-
-float gamma_impl(const float s) {
-	float s_inv = 1.0/s;
-    //  Float version:
-	float g = 1.12906830989;
-	float c0 = 0.8109119309638332633713423362694399653724431;
-	float c1 = 0.4808354605142681877121661197951496120000040;
-	float e = 2.71828182845904523536028747135266249775724709;
-	float sph = s + 0.5;
-	float lanczos_sum = c0 + c1/(s + 1.0);
-	float base = (sph + g)/e;
-	return (pow(base, sph) * lanczos_sum) * s_inv;
-}
-
-
-float numericalIntegrationCos(float two_s) {
-
-	float theta;
-	float steps = 64.0;
-	int isteps = 64;
-	float sum = 0.0f;
-	for (int i = 1; i < isteps - 1; ++i) {
-		theta = -M_PI + float(i) * (2.0 * M_PI) / steps;
-		sum += pow(abs(cos(theta* 0.5)), two_s);
-	}
-
-	float s0 = 0.0; //pow(abs(cos(-M_PI * 0.5)), two_s);
-	float sn = 0.0; //pow(abs(cos(M_PI * 0.5)), two_s);
-	sum = (sum + 0.5 * (float(s0) + float(sn)))  * (2.0 * M_PI) / steps;
-
-	return sum;
-}
-
-
-float auxDonelan(float w, vec2 waveDir, vec2 windDir, float wPeak, float swell) {
-
-	float cos_angle = dot(waveDir,windDir);
-	if (cos_angle < -1.0)
-		cos_angle = -1.0;
-	else if (cos_angle > 1.0)
-		cos_angle = 1.0;	
-	float wave_angle = acos(cos_angle);
-	float wcoeff = w / wPeak;
-	float epsilon = -0.4f + 0.8393f * exp(-0.567f * log(pow(wcoeff, 2.0)));
-	float beta;
-	if (wcoeff < 0.95f)
-		beta = 2.61f * pow(wcoeff, 1.3f);
-	else if (wcoeff < 1.6f)
-		beta = 2.28f * pow(wcoeff, -1.3f);
-	else
-		beta = pow(10.0f, epsilon);
-	return beta / (2.0 * tanh(beta * M_PI)) * pow(1.0 / cosh(beta * wave_angle), 2.0);
-}
-
-
-float auxHorvath(float w, vec2 waveDir, vec2 windDir, float wPeak, float swell) {			// compute Horvath factor
-	float cos_angle = dot(waveDir,windDir);
-	if (cos_angle < -1.0)
-		cos_angle = -1.0;
-	float half_angle_cos = sqrt((1.0 + cos_angle) / 2.0);
-	float s = 16.0 * tanh(wPeak / w) * swell;
-	float qs = pow(2.0, 20. * s - 1.0) / M_PI * pow(gamma_impl(s + 1.0), 2.0) / gamma_impl(2.0 * s + 1.0);
-	return qs * pow(abs(half_angle_cos), 2.0 * s);
-}
-
-
-float getDirectionalSpreading(int directionalMode, float w, float wPeak, vec2 waveDir, vec2 windDir, float windSpeed, float swell) {
-
-	float cos_angle, half_angle_cos, s, sp, qs, wave_angle, wcoeff, epsilon, beta, norm, theta;
-
-	switch(directionalMode) {
-		// Massel (2018) - Ocean surface waves: their physics and precdiction
-		//	"Historically, the first attempt to model directional energy spreading was
-		//	suggested by Pierson et al. (1955) in the form of the cosine type function"
-		case DIRECTIONAL_COS_POWER: 
-			float cos_angle = dot(waveDir, windDir);
-			if (cos_angle > 0.0)
-				return 2.0/M_PI * pow(cos_angle,2.0);
-			else
-				return 0.0;
-
-		// Mitsuyasu (1975)
-		case DIRECTIONAL_MITSUYASU:
-			cos_angle = dot(waveDir, windDir);
-			if (cos_angle < -1.0)
-				cos_angle = -1.0;
-			half_angle_cos = sqrt(( 1.0 + cos_angle)/2.0);
-			sp = 11.5 * pow((wPeak * windSpeed /G),-2.5);
-			if (w <= wPeak)
-				s = sp * pow(w / wPeak, 5.0);
-			else
-				s = sp * pow(w / wPeak, -2.5f);
-			norm = numericalIntegrationCos(2.0*s);
-			return 	pow(abs(half_angle_cos), 2.0*s) / (norm + 0.00001);
-			//qs = pow(2.0, 2.0*s-1.0) / M_PI * pow(gamma_impl(s+1.0), 2.0)/ gamma_impl(2.0*s +1.0);
-			//return qs * pow(abs(half_angle_cos), 2*s);
-
-		// Mitsuyasu: see Emprirical Directional Wave Spectra, Horvath, 2015
-		case DIRECTIONAL_HORVATH_MITSUYASU:
-			cos_angle = dot(windDir,waveDir);
-			if (cos_angle < -1.0)
-				cos_angle = -1.0;
-			half_angle_cos = sqrt((1.0+ cos_angle)/2.0);
-			sp = 11.5 * pow((wPeak * windSpeed /G),-2.5);
-			if (w <= wPeak)
-				s = sp * pow(w / wPeak, 5.0);
-			else
-				s = sp * pow(w / wPeak, -2.5f);
-			// swell term	
-			s += 16.0 * tanh(wPeak/w) * swell;
-			norm = numericalIntegrationCos(2.0*s);
-			return pow(abs(half_angle_cos), 2.0*s) / norm;
-			//qs = pow(2.0, 2.0*s-1.0) / M_PI * pow(gamma_impl(s+1.0), 2.0)/ gamma_impl(2.0*s +1.0);
-			//return qs * pow(abs(half_angle_cos), 2.0*s);
-
-		// Hasselmann 1980
-		case DIRECTIONAL_HASSELMANN:
-
-			cos_angle = dot(windDir,waveDir);
-			if (cos_angle < -1.0)
-				cos_angle = -1.0;
-			half_angle_cos = sqrt((1.0 + cos_angle) * 0.5);
-			sp = 11.5 * pow((wPeak * windSpeed /G),-2.5);
-			if (w <= wPeak)
-				s = 6.97f * pow(w / wPeak, 4.06f);
-			else
-				s = 9.77f * pow(w / wPeak, -2.33f - 1.45f*((windSpeed * wPeak / 9.81f) - 1.17f));
-			norm = numericalIntegrationCos(2.0*s);
-			return 	pow(abs(half_angle_cos), 2.0*s) / norm;
-			//qs = pow(2, 2*s-1) / M_PI * pow(gamma_impl(s+1), 2)/ gamma_impl(2*s +1);
-			//return qs * pow(abs(half_angle_cos), 2*s);
-			
-		// Hasselmann: see Emprirical Directional Wave Spectra, Horvath, 2015
-		case DIRECTIONAL_HORVATH_HASSELMANN:
-
-			cos_angle = dot(windDir,waveDir);
-			if (cos_angle < -1.0)
-				cos_angle = -1.0;
-			half_angle_cos = sqrt((1.0 + cos_angle)/2.0);
-			sp = 11.5 * pow((wPeak * windSpeed /G),-2.5);
-			if (w <= wPeak)
-				s = 6.97f * pow(w / wPeak, 4.06f);
-			else
-				s = 9.77f * pow(w / wPeak, -2.33f - 1.45f*((windSpeed * wPeak / 9.81f) - 1.17f));
-			// swell term	
-			s += 16.0 * tanh(wPeak/w) * swell;
-			norm = numericalIntegrationCos(2.0*s);
-			return 	pow(abs(half_angle_cos), 2.0*s) / norm;
-			//qs = pow(2, 2*s-1) / M_PI * pow(gamma_impl(s+1), 2)/ gamma_impl(2*s +1);
-			//return qs * pow(abs(half_angle_cos), 2*s);
-			
-		// Donelan-Banner : see Emprirical Directional Wave Spectra
-		case DIRECTIONAL_DONNELAN_BANNER:
-			cos_angle = dot(windDir,waveDir);
-			if (cos_angle < -1.0)
-				cos_angle = -1.0;
-			else if (cos_angle > 1.0)
-				cos_angle = 1.0;	
-			wave_angle = acos(cos_angle);
-			wcoeff = w/wPeak;
-			epsilon = -0.4 + 0.8393 * exp( -0.567 * log(pow(wcoeff,2.0)));
-
-
-			if (wcoeff < 0.95)
-				beta = 2.61 * pow(wcoeff, 1.3);
-			else if (wcoeff < 1.6)
-				beta = 2.28 * pow(wcoeff, -1.3);
-			else
-				beta = pow(10.0,epsilon);
-			return beta / (2.0 * tanh(beta * M_PI)) * pow(1.0 / cosh(beta * wave_angle), 2.0);;
-
-		// Donelan-Banner: see Emprirical Directional Wave Spectra, Horvath, 2015	
-		case DIRECTIONAL_HORVATH_DONNELAN_BANNER:
-			vec2 wDir; float sum = 0.0;
-			for (int i = 1; i < 30; ++i) {
-				theta = -M_PI + (float(i) + 1.0) * 2.0 * M_PI / 32.0;
-				wDir = vec2(cos(theta), sin(theta));
-				sum += auxDonelan(w, wDir, windDir, wPeak, swell) * auxHorvath(w, wDir, windDir, wPeak, swell);
-			}
-			wDir = vec2(cos(-M_PI), sin(-M_PI));
-			float f0 = auxDonelan(w, wDir, windDir, wPeak, swell) * auxHorvath(w, wDir, windDir, wPeak, swell);
-
-			wDir = vec2(cos(M_PI), sin(M_PI));
-			float fn = auxDonelan(w, wDir, windDir, wPeak, swell) * auxHorvath(w, wDir, windDir, wPeak, swell);
-			
-			norm = (sum + 0.5f * (f0 + fn))  * (2.0 * M_PI / 32.0);
-
-			return auxDonelan(w, waveDir, windDir, wPeak, swell) * auxHorvath(w, waveDir, windDir, wPeak, swell) / norm;
-	
-		
-	}
-	
-}
-
-// -----------------------------
-// Spectra in wave number format
-// -----------------------------
-// Chen, Li-ning and Jin, Yi - cheng and Yin, Yong and Ren, Hong-xiang
-// On the Wave Spectrum Selection in Ocean Wave Scene Simulation of the Maritime Simulator
-// AsiaSim 2013     A = 3.48e-3f
-
-float Phillips(vec2 vec_k, float windSpeed, vec2 windDir) 
-{
-	if (vec_k == vec2(0.0f, 0.0f))
-		return 0.0f;
-        
-    // Largest possible waves arising from a continuous wind of speed V
-	float L = windSpeed*windSpeed / G; 
-
-	float k = length(vec_k);
-	vec2 k_hat = normalize(vec_k);
-	float dot_k_w = dot(k_hat, normalize(windDir));
-	float result = 3.48e-3 * exp(-1.0 / (k*L*k*L)) / pow(k, 4.0) * pow(dot_k_w, 2.0);
-
-    // suppressing very small waves ( l << L
-	float l = 0.1;//0.00001 * L * L;
-	result *= exp(-k*k*l*l);  // Eq24
-
-	return result;
-}
-
-// ------------------------------
-// Frequency Spectra
-// ------------------------------
-
-
-// From original article by Pierson and Moskowitz (1964) Journal of Geophysical Research
-// The scaling coefficient 1.026 is to compensate the fact that in PM the wind is 
-// measured at 19.5 mt, whereas in all other works a height of 10 mts is considered
-// U19.5 ≈ 1.026 U10 (Stewart, 2006)
-// the function below takes winds at 10 mt above sea level
-float Pierson_Moskowitz(float windSpeed, float w) 
-{
-	// s(w)
-	float wp = 0.879 * G / (1.026 * windSpeed);
-	float expTerm = -1.25 * pow(wp/w,4.0) ;
-	float result = 8.1e-3 * G * G * pow(w, -5.0) * exp(expTerm);
-	return result;
-}
-
-
-// Pierson - Moskowitz defined as a function of significant wave height
-// Ochi, pg 35
-// https://ocw.mit.edu/courses/mechanical-engineering/2-22-design-principles-for-ocean-vehicles-13-42-spring-2005/readings/lec6_wavespectra.pdf
-float PiersonMoskowitzHs(float w) {
-
-	float expTerm = -0.032 * pow(G / (Hs), 2.0) * pow(w, -4.0);
-	float result = 8.1e-3 * pow(G, 2.0) * pow(w, -5.0) * exp(expTerm);
-	return result;
-}
-
-
-// Bretschneider two parameter spectrum: Hs and wm
-// setting wm = 0.4 sqrt(g/Hs) reverts to Pierson-Moskowitz
-// Ochi, pg 36
-float Bretschneider(float w) {
-
-	float expTerm = -1.25f * pow(Bretschneider_wm / w, 4.0);
-	float result = 1.25f/4.0f * pow(Bretschneider_wm,4.0) * Hs*Hs * pow(w, -5.0) * exp(expTerm);
-	return result;
-}
-
-
-// Ochi, Six-Parameter wave spectra, 1976
-float OchiSingle(float w, float l, float wm, float hs) {
-
-	float aux = (4.0 * l + 1.0) / 4.0f;
-	return 0.25f * pow(aux * pow(wm, 4.0),float(l)) / gamma_impl(l) * pow(hs, 2.0) / pow(w, 4.0 * l + 1.0) * exp(-aux* pow(wm / w, 4.0));
-}
-
-
-float Ochi(float w, float l1, float wm1, float hs1, float l2, float wm2, float hs2) {
-
-	return float(OchiSingle(w, l1, wm1, hs1)) + float(OchiSingle(w, l2, wm2, hs2));
-}
-
-
-float OchiHs(float w) {
-	return Ochi(w, 3.0, 0.7f * exp(-0.046f * Hs), 0.84f * Hs,1.54f * exp(-0.062f *  Hs), 1.15f * exp(-0.039f * Hs), 0.54f* Hs);
-}
-
-
-// From Hasselman et. al 1973
-float JONSWAP(float windSpeed, float w, float fetch) 
-{    
-	float dimensionlessFetch = G * fetch / pow(windSpeed,2.0);
-	float wp = 22.0 * (G/windSpeed) * pow(dimensionlessFetch, -0.33);
-	float expTerm = -1.25 * pow(wp/w, 4.0);
-	
-	float sigma = JONSWAP_sigmaB;
-	if (w <= wp)
-		sigma = JONSWAP_sigmaA;	
-	float gamaExp = 0.5 * pow((w - wp) /(sigma * wp), 2.0); 
-	
-	float alpha = 0.076 * pow(dimensionlessFetch, -0.22);
-	
-	float result = alpha * G * G * pow(w, -5.0) * exp(expTerm) * pow(JONSWAP_gamma, exp(-gamaExp));
-	
-	return result;
-}
-
-
-// Donelan et al (1985) proposed a modification to the JONSWAP spectral form
-float DonnelanJONSWAP(float windSpeed, float w, float fetch) 
-{
-	float dimensionlessFetch = G * fetch / pow(windSpeed, 2.0);
-	float Omega = 11.6f * pow(dimensionlessFetch, -0.23f);
-
-	// wp from JONSWAP
-	float wp = 22.0 * (G/windSpeed) * pow(dimensionlessFetch, -0.33);
-	Omega = wp * windSpeed / G;
-	//float wp = Omega * (G / windSpeed);
-	float expTerm = -pow(wp / w, 4.0);
-
-	float sigma = 0.08f * (1.0 + 4.0 / pow(Omega,3.0));
-
-	float gamaExp = 0.5 * pow((w - wp) /(sigma * wp), 2.0); 
-
-	float beta = 0.006f * pow(Omega, 0.55f);
-
-	float gamma;
-	if (Omega > 1.0)
-		gamma = 1.7f + 6.0 * log(Omega);
-	else
-		gamma = 1.7f;
-
-	float result = beta * G * G * pow(wp, -1.0) * pow(w, -4.0) * exp(expTerm) * pow(gamma, exp(-gamaExp));
-
-	return result;
-}
-
-
-// From TMA, Hughes et al 1984
-float TMA(float windSpeed, float w, float depth, float fetch) {
-
-
-	float result = JONSWAP(windSpeed, w, fetch);
-
-	float wh = clamp(w * sqrt(depth/G), 0.0, 2.0);
-	float theta;
-	if (wh <= 1.0)
-		theta = 0.5 * wh*wh;
-	else
-		theta = 1.0-0.5*pow(2.0-wh, 2.0);
-		
-	clamp( theta,0.0,1.0);	
-	
-	return result * theta;
-}
-
-
-// From A unified directional spectrumfor long and short wind - driven waves
-// T.Elfouhaily, B.Chapron, and K.Katsaros
-// https://archimer.ifremer.fr/doc/00091/20226/
-float omega(float k) {
-	float km = 370.0;
-	return (sqrt(G * k * (1.0 + pow(k / km, 2.0)))); // eq 24.
-}
-
-
-float Unified(vec2 kvec, vec2 khat) {
-
-	float k = length(kvec);
-	if (k == 0.0f)
-		return 0.0f;
-
-	float X = G * fetch / pow(windSpeed, 2.0); // after eq. 4
-
-	float X0 = 2.2e4f;
-	float Omega = 0.84f * pow(tanh(pow(X / X0, 0.4f)), -0.75f); // eq. 37
-
-	float kp = G * pow(Omega / windSpeed, 2.0); // below eq. 3
-
-	float c = omega(k) / k; // wave phase speed
-	float cp = omega(kp) / kp; // phase speed for peak frequency
-
-	float alphap = 6e-3f * sqrt(Omega); // eq. 34
-
-	float Lpm = exp(-1.25f * pow(kp / k, 2.0));  // eq. 2
-
-	float sigma = 0.08f * (1.0 + 4.0 * pow(Omega, -3.0)); // below eq. 3
-	float Gamma = exp(-0.5f * pow(sqrt(k / kp) - 1.0, 2.0) / pow(sigma, 2.0));
-	float gamma = 1.7f;
-	if (Omega > 1.0)
-		gamma +=  6.0 * log(Omega);
-
-	float Jp = pow(gamma, Gamma); // eq. 3
-
-	float Fp = Lpm * Jp * exp(-Omega / sqrt(10.0) * (sqrt(k / kp) - 1.0)); // eq. 32
-
-	float Bl = 0.5f * alphap * (cp / c) * Fp; // eq. 31
-
-	float cm = 0.23f; // between eq. 40 and 41
-
-	float z0 = 3.7e-5f * pow(windSpeed, 2.0) / G * pow(windSpeed / cp, 0.9f); // eq. 66
-
-	// https://en.wikipedia.org/wiki/Von_K%C3%A1rm%C3%A1n_constant
-	float K = 0.41f;
-	float ustar = K * windSpeed / log(10.0f / z0); // eq. 60
-
-	float alpham = 0.01f;
-	if (ustar < cm) // eq 44
-		alpham *= (1.0 + log(ustar / cm));
-	else
-		alpham *= (1.0 + 3.0 * log(ustar / cm));
-
-	float km = 370.0;
-	float Fm = exp(-0.25f * pow(k / km - 1.0, 2.0));
-
-	float Bh = 0.5f * alpham * (cm / c) * Fm * Lpm; // eq. 40 (fixed ? )
-
-	float a0 = log(2.0) / 4.0;
-	float ap = 4.0;
-	float am = 0.13f * ustar / cm;
-	float delta = tanh(a0 + ap * pow(c / cp, 2.5f) + am * (pow(cm / c, 2.5f))); // eq. 57
-
-	float cos_twice_angle = 2.0 * pow(dot(windDir,khat), 2.0) - 1.0;
-	return 1.0 / (2.0 * M_PI) * pow(k, -4.0) * (Bl + Bh) * (1.0 + delta * cos_twice_angle); // eq. 67
-}
-
-
-
-float getSpectrum(int spectrum, vec2 k_vec, float L, vec2 windDir, float windSpeed, int directionalMode, int dispersionMode, int propagate, float depth, float fetch, float swell) {
-
-
-	if (k_vec == vec2(0,0))
-		return 0.0;
-		
-	float res;
-	float amplitudeCorrection = pow(2.0 * M_PI/L, 2.0);//2.0 * M_PI/L;//
-	
-	if (propagate == 1) {
-		if (dot(k_vec, windDir) <= 0.0) {
-			return 0.0;
-		}
-		else {
-			amplitudeCorrection *= 2.0;
-		}
-	}
-	
-	float k = length(k_vec);
-	vec2 k_hat = normalize(k_vec);
-	float aux1;
-	float w = getDispersionW(k, depth, dispersionMode);
-		
-	//imageStore(texF, ivec2(gl_GlobalInvocationID.xy), vec4(directionalMode, spectrum, 3, 4));
-
-	switch(spectrum) {
-		case SPECTRUM_PHILLIPS:
-			res = Phillips(k_vec, windSpeed, windDir);
-			break;
-		case SPECTRUM_PIERSON_MOSKOWITZ:
-			res = Pierson_Moskowitz(windSpeed, w);
-			res *= getDirectionalSpreading(directionalMode, w, 0.877*G/windSpeed, k_hat, windDir, windSpeed, swell);
-			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
-			break;
-		case SPECTRUM_JONSWAP:
-			res = JONSWAP(windSpeed, w, fetch);
-			aux1 = G * fetch / pow(windSpeed,2.0);
-			res *= getDirectionalSpreading(directionalMode, w, 22.0*(G/windSpeed) * pow(aux1, -0.33), k_hat, windDir, windSpeed, swell);
-			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
-			break;
-		case SPECTRUM_DONNELAN_JONSWAP:
-			res = DonnelanJONSWAP(windSpeed, w, fetch);
-			aux1 = G * fetch / pow(windSpeed,2.0);
-			res *= getDirectionalSpreading(directionalMode, w, 22.0*(G/windSpeed) * pow(aux1, -0.33), k_hat, windDir, windSpeed, swell); 
-			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
-			break;
-		case SPECTRUM_TMA:
-			res = TMA(windSpeed, w, depth, fetch);
-			res *= getDirectionalSpreading(directionalMode, w, 22.0 * pow(G*G/(windSpeed*fetch), 0.33), k_hat, windDir, windSpeed, swell);
-			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
-			break;
-		case SPECTRUM_UNIFIED:
-			res = Unified(k_vec, k_hat);
-			break;
-		case SPECTRUM_PIERSON_MOSKOWITZ_HS:
-			res = PiersonMoskowitzHs(w);
-			res *= getDirectionalSpreading(directionalMode, w, 0.4f * sqrt(G / Hs), k_hat, windDir, windSpeed, swell);
-			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
-			break;
-		case SPECTRUM_BRETSCHNEIDER:
-			res = Bretschneider(w);
-			res *= getDirectionalSpreading(directionalMode, w, 0.4f * sqrt(G / Hs), k_hat, windDir, windSpeed, swell);
-			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
-			break;
-		case SPECTRUM_OCHI:
-			res = Ochi(w,Ochi_lambda1, Ochi_wm1, Ochi_Hs1, Ochi_lambda2, Ochi_wm2, Ochi_Hs2);
-			res *= getDirectionalSpreading(directionalMode, w, 0.4f * sqrt(G / Hs), k_hat, windDir, windSpeed, swell);
-			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
-			break;
-		case SPECTRUM_OCHI_HS:
-			res = OchiHs(w);
-			res *= getDirectionalSpreading(directionalMode, w, 0.4f * sqrt(G / Hs), k_hat, windDir, windSpeed, swell);
-			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
-			break;
-
-	}	
-	//amplitudeCorrection = 1;	
-	return amplitudeCorrection * res ;
-}
-
-float rand(vec2 co){
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-}
-
-void main(void) {
-
-	vec2 hK, hminusK;
-
-	ivec2 pos = ivec2(texCoordV * 512.0);
-	
-	int kx = pos.x >= width/2 ? pos.x - width: pos.x;
-	int kz = pos.y >= width/2 ? pos.y - width: pos.y;
-	float whalf = float(width) / 2.0;
-
-	vec2 k = vec2(kx, kz) * 2.0 * M_PI/float(L);
-	
-	float aux = getSpectrum(spectrum, k, float(L), windDir, windSpeed, directionalMode,dispersionMode, propagate, depth, fetch, swell) * spectrumScale;
-	
-	float p = sqrt(aux * 0.5f);
-
-	float z1, z2;
-
-	// clamp to prevent values equal to zero
-	vec4 z = clamp(vec4(rand(vec2(pos) + vec2(1000, 1000)), rand(vec2(pos) + vec2(2000, 2000)), rand(vec2(pos) + vec2(3000, 3000)), rand(vec2(pos) + vec2(4000, 4000))), 0.000001, 1.0);
-	z1 = z.x-0.5;
-	z2 = z.y-0.5;
-
-	if (randomDistribution == RANDOM_NORMAL || randomDistribution == RANDOM_LOG) {
-		// Box-Muller Transform
-		// http://mathworld.wolfram.com/Box-MullerTransformation.html
-		z1 = sqrt(-2.0*log(z.x))*cos(2.0 * M_PI * z.y);
-		z2 = sqrt(-2.0*log(z.x))*sin(2.0 * M_PI * z.y);
-
-		// https://www.quora.com/How-do-I-transform-between-log-normal-distribution-and-normal-distribution
-		if (randomDistribution == RANDOM_LOG) {
-			z1 = exp(z1);
-			z2 = exp(z2);
-		}
-	}
-	// https://stats.stackexchange.com/questions/234544/from-uniform-distribution-to-exponential-distribution-and-vice-versa
-	else if (randomDistribution == RANDOM_EXP) {
-		z1 = -log(z.x);
-		z2 = -log(z.y);
-	}
-	hK = vec2(z1, z2) * p;
-	
-	// Box-Muller Transform
-	float aux2 = getSpectrum(spectrum, -k, float(L), windDir, windSpeed, directionalMode, dispersionMode, propagate, depth, fetch, swell) * spectrumScale;
-	p = sqrt(aux2 * 0.5);
-	
-	hminusK = vec2(z1, z2) * p;
-	hminusK.y = -hminusK.y;
-	
-	//h0k = vec4(0.5, 0.4, 0.3, 1.0);
-	h0k = vec4(hK.x, hK.y, hminusK.x, hminusK.y);
-}
 
+    #define DISPERSION_DEEP 0
+    #define DISPERSION_SHALLOW 1
+    #define DISPERSION_ CAPILLARY 2
+
+
+    #define DIRECTIONAL_COS_POWER 0
+    #define DIRECTIONAL_MITSUYASU 1
+    #define DIRECTIONAL_HASSELMANN 2
+    #define DIRECTIONAL_DONNELAN_BANNER 3
+    #define DIRECTIONAL_HORVATH_MITSUYASU 4
+    #define DIRECTIONAL_HORVATH_HASSELMANN 5
+    #define DIRECTIONAL_HORVATH_DONNELAN_BANNER 6
+
+    #define SPECTRUM_PHILLIPS 0
+    #define SPECTRUM_PIERSON_MOSKOWITZ 1
+    #define SPECTRUM_JONSWAP 2
+    #define SPECTRUM_DONNELAN_JONSWAP 3
+    #define SPECTRUM_TMA 4
+    #define SPECTRUM_UNIFIED 5
+    #define SPECTRUM_PIERSON_MOSKOWITZ_HS 6
+    #define SPECTRUM_BRETSCHNEIDER 7
+    #define SPECTRUM_OCHI 8
+    #define SPECTRUM_OCHI_HS 9
+
+
+
+    // ------------------------------
+    // Dispersion
+    // ------------------------------
+
+    float getDispersionW(float k, float depth, int dispersionMode) {
+
+    	float tension = 0.074; // N/m
+    	float density = 1000.0; // Kg/m3
+
+    	// deep waters
+    	if (dispersionMode == DISPERSION_DEEP)
+    		return sqrt(k * G);
+    	// shallow waters
+    	else if (dispersionMode == DISPERSION_SHALLOW)
+    		return sqrt(k * G * tanh(k*depth));
+    	else  // DISPERSION_ CAPILLARY
+    		return sqrt((G * k + pow(k,3.0) * tension/density) * tanh(k*depth));
+    }
+
+
+    float getDispersionDerivative(float k, float depth, int dispersionMode) {
+
+    	float tension = 0.074; // N/m
+    	float density = 1000.0; // Kg/m3
+    	float w = getDispersionW(k, depth, dispersionMode);
+
+    	// deep waters
+    	if (dispersionMode == DISPERSION_DEEP)
+    		return G * 0.5f / w;
+    	// shallow waters
+    	else if (dispersionMode == DISPERSION_SHALLOW) {
+    		float dk = depth * k;
+    		float th = tanh(dk);
+    		return 0.5f * sqrt(9.81f / (k*th)) * (th + dk*(1.0 - th*th));
+    	}
+    	else { // DISPERSION_ CAPILLARY
+    		float dk = depth * k;
+    		float th = tanh(dk);
+    		float b = tension/density;
+    		return 0.5f * ((9.81f + 3.0 * b*k*k)*th + dk * (k*k*b + 9.81f) * pow(1.0f / cosh(dk), 2.0)) / w;
+    	}
+    }
+
+
+
+
+
+
+    // ------------------------------
+    // Directional Spreaading
+    // ------------------------------
+
+    // Taken from:
+    // https://buildbot.libretro.com/assets/frontend/bundle/shaders/shaders_glsl/crt/shaders/crt-royale/port-helpers/special-functions.h
+
+    float gamma_impl(const float s) {
+    	float s_inv = 1.0/s;
+        //  Float version:
+    	float g = 1.12906830989;
+    	float c0 = 0.8109119309638332633713423362694399653724431;
+    	float c1 = 0.4808354605142681877121661197951496120000040;
+    	float e = 2.71828182845904523536028747135266249775724709;
+    	float sph = s + 0.5;
+    	float lanczos_sum = c0 + c1/(s + 1.0);
+    	float base = (sph + g)/e;
+    	return (pow(base, sph) * lanczos_sum) * s_inv;
+    }
+
+
+    float numericalIntegrationCos(float two_s) {
+
+    	float theta;
+    	float steps = 64.0;
+    	int isteps = 64;
+    	float sum = 0.0f;
+    	for (int i = 1; i < isteps - 1; ++i) {
+    		theta = -M_PI + float(i) * (2.0 * M_PI) / steps;
+    		sum += pow(abs(cos(theta* 0.5)), two_s);
+    	}
+
+    	float s0 = 0.0; //pow(abs(cos(-M_PI * 0.5)), two_s);
+    	float sn = 0.0; //pow(abs(cos(M_PI * 0.5)), two_s);
+    	sum = (sum + 0.5 * (float(s0) + float(sn)))  * (2.0 * M_PI) / steps;
+
+    	return sum;
+    }
+
+
+    float auxDonelan(float w, vec2 waveDir, vec2 windDir, float wPeak, float swell) {
+
+    	float cos_angle = dot(waveDir,windDir);
+    	if (cos_angle < -1.0)
+    		cos_angle = -1.0;
+    	else if (cos_angle > 1.0)
+    		cos_angle = 1.0;
+    	float wave_angle = acos(cos_angle);
+    	float wcoeff = w / wPeak;
+    	float epsilon = -0.4f + 0.8393f * exp(-0.567f * log(pow(wcoeff, 2.0)));
+    	float beta;
+    	if (wcoeff < 0.95f)
+    		beta = 2.61f * pow(wcoeff, 1.3f);
+    	else if (wcoeff < 1.6f)
+    		beta = 2.28f * pow(wcoeff, -1.3f);
+    	else
+    		beta = pow(10.0f, epsilon);
+    	return beta / (2.0 * tanh(beta * M_PI)) * pow(1.0 / cosh(beta * wave_angle), 2.0);
+    }
+
+
+    float auxHorvath(float w, vec2 waveDir, vec2 windDir, float wPeak, float swell) {			// compute Horvath factor
+    	float cos_angle = dot(waveDir,windDir);
+    	if (cos_angle < -1.0)
+    		cos_angle = -1.0;
+    	float half_angle_cos = sqrt((1.0 + cos_angle) / 2.0);
+    	float s = 16.0 * tanh(wPeak / w) * swell;
+    	float qs = pow(2.0, 20. * s - 1.0) / M_PI * pow(gamma_impl(s + 1.0), 2.0) / gamma_impl(2.0 * s + 1.0);
+    	return qs * pow(abs(half_angle_cos), 2.0 * s);
+    }
+
+
+    float getDirectionalSpreading(int directionalMode, float w, float wPeak, vec2 waveDir, vec2 windDir, float windSpeed, float swell) {
+
+    	float cos_angle, half_angle_cos, s, sp, qs, wave_angle, wcoeff, epsilon, beta, norm, theta;
+
+    	switch(directionalMode) {
+    		// Massel (2018) - Ocean surface waves: their physics and precdiction
+    		//	"Historically, the first attempt to model directional energy spreading was
+    		//	suggested by Pierson et al. (1955) in the form of the cosine type function"
+    		case DIRECTIONAL_COS_POWER:
+    			float cos_angle = dot(waveDir, windDir);
+    			if (cos_angle > 0.0)
+    				return 2.0/M_PI * pow(cos_angle,2.0);
+    			else
+    				return 0.0;
+
+    		// Mitsuyasu (1975)
+    		case DIRECTIONAL_MITSUYASU:
+    			cos_angle = dot(waveDir, windDir);
+    			if (cos_angle < -1.0)
+    				cos_angle = -1.0;
+    			half_angle_cos = sqrt(( 1.0 + cos_angle)/2.0);
+    			sp = 11.5 * pow((wPeak * windSpeed /G),-2.5);
+    			if (w <= wPeak)
+    				s = sp * pow(w / wPeak, 5.0);
+    			else
+    				s = sp * pow(w / wPeak, -2.5f);
+    			norm = numericalIntegrationCos(2.0*s);
+    			return 	pow(abs(half_angle_cos), 2.0*s) / (norm + 0.00001);
+    			//qs = pow(2.0, 2.0*s-1.0) / M_PI * pow(gamma_impl(s+1.0), 2.0)/ gamma_impl(2.0*s +1.0);
+    			//return qs * pow(abs(half_angle_cos), 2*s);
+
+    		// Mitsuyasu: see Emprirical Directional Wave Spectra, Horvath, 2015
+    		case DIRECTIONAL_HORVATH_MITSUYASU:
+    			cos_angle = dot(windDir,waveDir);
+    			if (cos_angle < -1.0)
+    				cos_angle = -1.0;
+    			half_angle_cos = sqrt((1.0+ cos_angle)/2.0);
+    			sp = 11.5 * pow((wPeak * windSpeed /G),-2.5);
+    			if (w <= wPeak)
+    				s = sp * pow(w / wPeak, 5.0);
+    			else
+    				s = sp * pow(w / wPeak, -2.5f);
+    			// swell term
+    			s += 16.0 * tanh(wPeak/w) * swell;
+    			norm = numericalIntegrationCos(2.0*s);
+    			return pow(abs(half_angle_cos), 2.0*s) / norm;
+    			//qs = pow(2.0, 2.0*s-1.0) / M_PI * pow(gamma_impl(s+1.0), 2.0)/ gamma_impl(2.0*s +1.0);
+    			//return qs * pow(abs(half_angle_cos), 2.0*s);
+
+    		// Hasselmann 1980
+    		case DIRECTIONAL_HASSELMANN:
+
+    			cos_angle = dot(windDir,waveDir);
+    			if (cos_angle < -1.0)
+    				cos_angle = -1.0;
+    			half_angle_cos = sqrt((1.0 + cos_angle) * 0.5);
+    			sp = 11.5 * pow((wPeak * windSpeed /G),-2.5);
+    			if (w <= wPeak)
+    				s = 6.97f * pow(w / wPeak, 4.06f);
+    			else
+    				s = 9.77f * pow(w / wPeak, -2.33f - 1.45f*((windSpeed * wPeak / 9.81f) - 1.17f));
+    			norm = numericalIntegrationCos(2.0*s);
+    			return 	pow(abs(half_angle_cos), 2.0*s) / norm;
+    			//qs = pow(2, 2*s-1) / M_PI * pow(gamma_impl(s+1), 2)/ gamma_impl(2*s +1);
+    			//return qs * pow(abs(half_angle_cos), 2*s);
+
+    		// Hasselmann: see Emprirical Directional Wave Spectra, Horvath, 2015
+    		case DIRECTIONAL_HORVATH_HASSELMANN:
+
+    			cos_angle = dot(windDir,waveDir);
+    			if (cos_angle < -1.0)
+    				cos_angle = -1.0;
+    			half_angle_cos = sqrt((1.0 + cos_angle)/2.0);
+    			sp = 11.5 * pow((wPeak * windSpeed /G),-2.5);
+    			if (w <= wPeak)
+    				s = 6.97f * pow(w / wPeak, 4.06f);
+    			else
+    				s = 9.77f * pow(w / wPeak, -2.33f - 1.45f*((windSpeed * wPeak / 9.81f) - 1.17f));
+    			// swell term
+    			s += 16.0 * tanh(wPeak/w) * swell;
+    			norm = numericalIntegrationCos(2.0*s);
+    			return 	pow(abs(half_angle_cos), 2.0*s) / norm;
+    			//qs = pow(2, 2*s-1) / M_PI * pow(gamma_impl(s+1), 2)/ gamma_impl(2*s +1);
+    			//return qs * pow(abs(half_angle_cos), 2*s);
+
+    		// Donelan-Banner : see Emprirical Directional Wave Spectra
+    		case DIRECTIONAL_DONNELAN_BANNER:
+    			cos_angle = dot(windDir,waveDir);
+    			if (cos_angle < -1.0)
+    				cos_angle = -1.0;
+    			else if (cos_angle > 1.0)
+    				cos_angle = 1.0;
+    			wave_angle = acos(cos_angle);
+    			wcoeff = w/wPeak;
+    			epsilon = -0.4 + 0.8393 * exp( -0.567 * log(pow(wcoeff,2.0)));
+
+
+    			if (wcoeff < 0.95)
+    				beta = 2.61 * pow(wcoeff, 1.3);
+    			else if (wcoeff < 1.6)
+    				beta = 2.28 * pow(wcoeff, -1.3);
+    			else
+    				beta = pow(10.0,epsilon);
+    			return beta / (2.0 * tanh(beta * M_PI)) * pow(1.0 / cosh(beta * wave_angle), 2.0);;
+
+    		// Donelan-Banner: see Emprirical Directional Wave Spectra, Horvath, 2015
+    		case DIRECTIONAL_HORVATH_DONNELAN_BANNER:
+    			vec2 wDir; float sum = 0.0;
+    			for (int i = 1; i < 30; ++i) {
+    				theta = -M_PI + (float(i) + 1.0) * 2.0 * M_PI / 32.0;
+    				wDir = vec2(cos(theta), sin(theta));
+    				sum += auxDonelan(w, wDir, windDir, wPeak, swell) * auxHorvath(w, wDir, windDir, wPeak, swell);
+    			}
+    			wDir = vec2(cos(-M_PI), sin(-M_PI));
+    			float f0 = auxDonelan(w, wDir, windDir, wPeak, swell) * auxHorvath(w, wDir, windDir, wPeak, swell);
+
+    			wDir = vec2(cos(M_PI), sin(M_PI));
+    			float fn = auxDonelan(w, wDir, windDir, wPeak, swell) * auxHorvath(w, wDir, windDir, wPeak, swell);
+
+    			norm = (sum + 0.5f * (f0 + fn))  * (2.0 * M_PI / 32.0);
+
+    			return auxDonelan(w, waveDir, windDir, wPeak, swell) * auxHorvath(w, waveDir, windDir, wPeak, swell) / norm;
+
+
+    	}
+
+    }
+
+    // -----------------------------
+    // Spectra in wave number format
+    // -----------------------------
+    // Chen, Li-ning and Jin, Yi - cheng and Yin, Yong and Ren, Hong-xiang
+    // On the Wave Spectrum Selection in Ocean Wave Scene Simulation of the Maritime Simulator
+    // AsiaSim 2013     A = 3.48e-3f
+
+    float Phillips(vec2 vec_k, float windSpeed, vec2 windDir)
+    {
+    	if (vec_k == vec2(0.0f, 0.0f))
+    		return 0.0f;
+
+        // Largest possible waves arising from a continuous wind of speed V
+    	float L = windSpeed*windSpeed / G;
+
+    	float k = length(vec_k);
+    	vec2 k_hat = normalize(vec_k);
+    	float dot_k_w = dot(k_hat, normalize(windDir));
+    	float result = 3.48e-3 * exp(-1.0 / (k*L*k*L)) / pow(k, 4.0) * pow(dot_k_w, 2.0);
+
+        // suppressing very small waves ( l << L
+    	float l = 0.1;//0.00001 * L * L;
+    	result *= exp(-k*k*l*l);  // Eq24
+
+    	return result;
+    }
+
+    // ------------------------------
+    // Frequency Spectra
+    // ------------------------------
+
+
+    // From original article by Pierson and Moskowitz (1964) Journal of Geophysical Research
+    // The scaling coefficient 1.026 is to compensate the fact that in PM the wind is
+    // measured at 19.5 mt, whereas in all other works a height of 10 mts is considered
+    // U19.5 ≈ 1.026 U10 (Stewart, 2006)
+    // the function below takes winds at 10 mt above sea level
+    float Pierson_Moskowitz(float windSpeed, float w)
+    {
+    	// s(w)
+    	float wp = 0.879 * G / (1.026 * windSpeed);
+    	float expTerm = -1.25 * pow(wp/w,4.0) ;
+    	float result = 8.1e-3 * G * G * pow(w, -5.0) * exp(expTerm);
+    	return result;
+    }
+
+
+    // Pierson - Moskowitz defined as a function of significant wave height
+    // Ochi, pg 35
+    // https://ocw.mit.edu/courses/mechanical-engineering/2-22-design-principles-for-ocean-vehicles-13-42-spring-2005/readings/lec6_wavespectra.pdf
+    float PiersonMoskowitzHs(float w) {
+
+    	float expTerm = -0.032 * pow(G / (Hs), 2.0) * pow(w, -4.0);
+    	float result = 8.1e-3 * pow(G, 2.0) * pow(w, -5.0) * exp(expTerm);
+    	return result;
+    }
+
+
+    // Bretschneider two parameter spectrum: Hs and wm
+    // setting wm = 0.4 sqrt(g/Hs) reverts to Pierson-Moskowitz
+    // Ochi, pg 36
+    float Bretschneider(float w) {
+
+    	float expTerm = -1.25f * pow(Bretschneider_wm / w, 4.0);
+    	float result = 1.25f/4.0f * pow(Bretschneider_wm,4.0) * Hs*Hs * pow(w, -5.0) * exp(expTerm);
+    	return result;
+    }
+
+
+    // Ochi, Six-Parameter wave spectra, 1976
+    float OchiSingle(float w, float l, float wm, float hs) {
+
+    	float aux = (4.0 * l + 1.0) / 4.0f;
+    	return 0.25f * pow(aux * pow(wm, 4.0),float(l)) / gamma_impl(l) * pow(hs, 2.0) / pow(w, 4.0 * l + 1.0) * exp(-aux* pow(wm / w, 4.0));
+    }
+
+
+    float Ochi(float w, float l1, float wm1, float hs1, float l2, float wm2, float hs2) {
+
+    	return float(OchiSingle(w, l1, wm1, hs1)) + float(OchiSingle(w, l2, wm2, hs2));
+    }
+
+
+    float OchiHs(float w) {
+    	return Ochi(w, 3.0, 0.7f * exp(-0.046f * Hs), 0.84f * Hs,1.54f * exp(-0.062f *  Hs), 1.15f * exp(-0.039f * Hs), 0.54f* Hs);
+    }
+
+
+    // From Hasselman et. al 1973
+    float JONSWAP(float windSpeed, float w, float fetch)
+    {
+    	float dimensionlessFetch = G * fetch / pow(windSpeed,2.0);
+    	float wp = 22.0 * (G/windSpeed) * pow(dimensionlessFetch, -0.33);
+    	float expTerm = -1.25 * pow(wp/w, 4.0);
+
+    	float sigma = JONSWAP_sigmaB;
+    	if (w <= wp)
+    		sigma = JONSWAP_sigmaA;
+    	float gamaExp = 0.5 * pow((w - wp) /(sigma * wp), 2.0);
+
+    	float alpha = 0.076 * pow(dimensionlessFetch, -0.22);
+
+    	float result = alpha * G * G * pow(w, -5.0) * exp(expTerm) * pow(JONSWAP_gamma, exp(-gamaExp));
+
+    	return result;
+    }
+
+
+    // Donelan et al (1985) proposed a modification to the JONSWAP spectral form
+    float DonnelanJONSWAP(float windSpeed, float w, float fetch)
+    {
+    	float dimensionlessFetch = G * fetch / pow(windSpeed, 2.0);
+    	float Omega = 11.6f * pow(dimensionlessFetch, -0.23f);
+
+    	// wp from JONSWAP
+    	float wp = 22.0 * (G/windSpeed) * pow(dimensionlessFetch, -0.33);
+    	Omega = wp * windSpeed / G;
+    	//float wp = Omega * (G / windSpeed);
+    	float expTerm = -pow(wp / w, 4.0);
+
+    	float sigma = 0.08f * (1.0 + 4.0 / pow(Omega,3.0));
+
+    	float gamaExp = 0.5 * pow((w - wp) /(sigma * wp), 2.0);
+
+    	float beta = 0.006f * pow(Omega, 0.55f);
+
+    	float gamma;
+    	if (Omega > 1.0)
+    		gamma = 1.7f + 6.0 * log(Omega);
+    	else
+    		gamma = 1.7f;
+
+    	float result = beta * G * G * pow(wp, -1.0) * pow(w, -4.0) * exp(expTerm) * pow(gamma, exp(-gamaExp));
+
+    	return result;
+    }
+
+
+    // From TMA, Hughes et al 1984
+    float TMA(float windSpeed, float w, float depth, float fetch) {
+
+
+    	float result = JONSWAP(windSpeed, w, fetch);
+
+    	float wh = clamp(w * sqrt(depth/G), 0.0, 2.0);
+    	float theta;
+    	if (wh <= 1.0)
+    		theta = 0.5 * wh*wh;
+    	else
+    		theta = 1.0-0.5*pow(2.0-wh, 2.0);
+
+    	clamp( theta,0.0,1.0);
+
+    	return result * theta;
+    }
+
+
+    // From A unified directional spectrumfor long and short wind - driven waves
+    // T.Elfouhaily, B.Chapron, and K.Katsaros
+    // https://archimer.ifremer.fr/doc/00091/20226/
+    float omega(float k) {
+    	float km = 370.0;
+    	return (sqrt(G * k * (1.0 + pow(k / km, 2.0)))); // eq 24.
+    }
+
+
+    float Unified(vec2 kvec, vec2 khat) {
+
+    	float k = length(kvec);
+    	if (k == 0.0f)
+    		return 0.0f;
+
+    	float X = G * fetch / pow(windSpeed, 2.0); // after eq. 4
+
+    	float X0 = 2.2e4f;
+    	float Omega = 0.84f * pow(tanh(pow(X / X0, 0.4f)), -0.75f); // eq. 37
+
+    	float kp = G * pow(Omega / windSpeed, 2.0); // below eq. 3
+
+    	float c = omega(k) / k; // wave phase speed
+    	float cp = omega(kp) / kp; // phase speed for peak frequency
+
+    	float alphap = 6e-3f * sqrt(Omega); // eq. 34
+
+    	float Lpm = exp(-1.25f * pow(kp / k, 2.0));  // eq. 2
+
+    	float sigma = 0.08f * (1.0 + 4.0 * pow(Omega, -3.0)); // below eq. 3
+    	float Gamma = exp(-0.5f * pow(sqrt(k / kp) - 1.0, 2.0) / pow(sigma, 2.0));
+    	float gamma = 1.7f;
+    	if (Omega > 1.0)
+    		gamma +=  6.0 * log(Omega);
+
+    	float Jp = pow(gamma, Gamma); // eq. 3
+
+    	float Fp = Lpm * Jp * exp(-Omega / sqrt(10.0) * (sqrt(k / kp) - 1.0)); // eq. 32
+
+    	float Bl = 0.5f * alphap * (cp / c) * Fp; // eq. 31
+
+    	float cm = 0.23f; // between eq. 40 and 41
+
+    	float z0 = 3.7e-5f * pow(windSpeed, 2.0) / G * pow(windSpeed / cp, 0.9f); // eq. 66
+
+    	// https://en.wikipedia.org/wiki/Von_K%C3%A1rm%C3%A1n_constant
+    	float K = 0.41f;
+    	float ustar = K * windSpeed / log(10.0f / z0); // eq. 60
+
+    	float alpham = 0.01f;
+    	if (ustar < cm) // eq 44
+    		alpham *= (1.0 + log(ustar / cm));
+    	else
+    		alpham *= (1.0 + 3.0 * log(ustar / cm));
+
+    	float km = 370.0;
+    	float Fm = exp(-0.25f * pow(k / km - 1.0, 2.0));
+
+    	float Bh = 0.5f * alpham * (cm / c) * Fm * Lpm; // eq. 40 (fixed ? )
+
+    	float a0 = log(2.0) / 4.0;
+    	float ap = 4.0;
+    	float am = 0.13f * ustar / cm;
+    	float delta = tanh(a0 + ap * pow(c / cp, 2.5f) + am * (pow(cm / c, 2.5f))); // eq. 57
+
+    	float cos_twice_angle = 2.0 * pow(dot(windDir,khat), 2.0) - 1.0;
+    	return 1.0 / (2.0 * M_PI) * pow(k, -4.0) * (Bl + Bh) * (1.0 + delta * cos_twice_angle); // eq. 67
+    }
+
+
+
+    float getSpectrum(int spectrum, vec2 k_vec, float L, vec2 windDir, float windSpeed, int directionalMode, int dispersionMode, int propagate, float depth, float fetch, float swell) {
+
+
+    	if (k_vec == vec2(0,0))
+    		return 0.0;
+
+    	float res;
+    	float amplitudeCorrection = pow(2.0 * M_PI/L, 2.0);//2.0 * M_PI/L;//
+
+    	if (propagate == 1) {
+    		if (dot(k_vec, windDir) <= 0.0) {
+    			return 0.0;
+    		}
+    		else {
+    			amplitudeCorrection *= 2.0;
+    		}
+    	}
+
+    	float k = length(k_vec);
+    	vec2 k_hat = normalize(k_vec);
+    	float aux1;
+    	float w = getDispersionW(k, depth, dispersionMode);
+
+    	//imageStore(texF, ivec2(gl_GlobalInvocationID.xy), vec4(directionalMode, spectrum, 3, 4));
+
+    	switch(spectrum) {
+    		case SPECTRUM_PHILLIPS:
+    			res = Phillips(k_vec, windSpeed, windDir);
+    			break;
+    		case SPECTRUM_PIERSON_MOSKOWITZ:
+    			res = Pierson_Moskowitz(windSpeed, w);
+    			res *= getDirectionalSpreading(directionalMode, w, 0.877*G/windSpeed, k_hat, windDir, windSpeed, swell);
+    			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
+    			break;
+    		case SPECTRUM_JONSWAP:
+    			res = JONSWAP(windSpeed, w, fetch);
+    			aux1 = G * fetch / pow(windSpeed,2.0);
+    			res *= getDirectionalSpreading(directionalMode, w, 22.0*(G/windSpeed) * pow(aux1, -0.33), k_hat, windDir, windSpeed, swell);
+    			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
+    			break;
+    		case SPECTRUM_DONNELAN_JONSWAP:
+    			res = DonnelanJONSWAP(windSpeed, w, fetch);
+    			aux1 = G * fetch / pow(windSpeed,2.0);
+    			res *= getDirectionalSpreading(directionalMode, w, 22.0*(G/windSpeed) * pow(aux1, -0.33), k_hat, windDir, windSpeed, swell);
+    			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
+    			break;
+    		case SPECTRUM_TMA:
+    			res = TMA(windSpeed, w, depth, fetch);
+    			res *= getDirectionalSpreading(directionalMode, w, 22.0 * pow(G*G/(windSpeed*fetch), 0.33), k_hat, windDir, windSpeed, swell);
+    			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
+    			break;
+    		case SPECTRUM_UNIFIED:
+    			res = Unified(k_vec, k_hat);
+    			break;
+    		case SPECTRUM_PIERSON_MOSKOWITZ_HS:
+    			res = PiersonMoskowitzHs(w);
+    			res *= getDirectionalSpreading(directionalMode, w, 0.4f * sqrt(G / Hs), k_hat, windDir, windSpeed, swell);
+    			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
+    			break;
+    		case SPECTRUM_BRETSCHNEIDER:
+    			res = Bretschneider(w);
+    			res *= getDirectionalSpreading(directionalMode, w, 0.4f * sqrt(G / Hs), k_hat, windDir, windSpeed, swell);
+    			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
+    			break;
+    		case SPECTRUM_OCHI:
+    			res = Ochi(w,Ochi_lambda1, Ochi_wm1, Ochi_Hs1, Ochi_lambda2, Ochi_wm2, Ochi_Hs2);
+    			res *= getDirectionalSpreading(directionalMode, w, 0.4f * sqrt(G / Hs), k_hat, windDir, windSpeed, swell);
+    			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
+    			break;
+    		case SPECTRUM_OCHI_HS:
+    			res = OchiHs(w);
+    			res *= getDirectionalSpreading(directionalMode, w, 0.4f * sqrt(G / Hs), k_hat, windDir, windSpeed, swell);
+    			res *= getDispersionDerivative(k, depth, dispersionMode) / k;
+    			break;
+
+    	}
+    	//amplitudeCorrection = 1;
+    	return amplitudeCorrection * res ;
+    }
+
+    float rand(vec2 co){
+        return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+    }
+
+    void main(void) {
+
+    	vec2 hK, hminusK;
+
+    	ivec2 pos = ivec2(texCoordV * 512.0);
+
+    	int kx = pos.x >= width/2 ? pos.x - width: pos.x;
+    	int kz = pos.y >= width/2 ? pos.y - width: pos.y;
+    	float whalf = float(width) / 2.0;
+
+    	vec2 k = vec2(kx, kz) * 2.0 * M_PI/float(L);
+
+    	float aux = getSpectrum(spectrum, k, float(L), windDir, windSpeed, directionalMode,dispersionMode, propagate, depth, fetch, swell) * spectrumScale;
+
+    	float p = sqrt(aux * 0.5f);
+
+    	float z1, z2;
+
+    	// clamp to prevent values equal to zero
+    	vec4 z = clamp(vec4(rand(vec2(pos) + vec2(1000, 1000)), rand(vec2(pos) + vec2(2000, 2000)), rand(vec2(pos) + vec2(3000, 3000)), rand(vec2(pos) + vec2(4000, 4000))), 0.000001, 1.0);
+    	z1 = z.x-0.5;
+    	z2 = z.y-0.5;
+
+    	if (randomDistribution == RANDOM_NORMAL || randomDistribution == RANDOM_LOG) {
+    		// Box-Muller Transform
+    		// http://mathworld.wolfram.com/Box-MullerTransformation.html
+    		z1 = sqrt(-2.0*log(z.x))*cos(2.0 * M_PI * z.y);
+    		z2 = sqrt(-2.0*log(z.x))*sin(2.0 * M_PI * z.y);
+
+    		// https://www.quora.com/How-do-I-transform-between-log-normal-distribution-and-normal-distribution
+    		if (randomDistribution == RANDOM_LOG) {
+    			z1 = exp(z1);
+    			z2 = exp(z2);
+    		}
+    	}
+    	// https://stats.stackexchange.com/questions/234544/from-uniform-distribution-to-exponential-distribution-and-vice-versa
+    	else if (randomDistribution == RANDOM_EXP) {
+    		z1 = -log(z.x);
+    		z2 = -log(z.y);
+    	}
+    	hK = vec2(z1, z2) * p;
+
+    	// Box-Muller Transform
+    	float aux2 = getSpectrum(spectrum, -k, float(L), windDir, windSpeed, directionalMode, dispersionMode, propagate, depth, fetch, swell) * spectrumScale;
+    	p = sqrt(aux2 * 0.5);
+
+    	hminusK = vec2(z1, z2) * p;
+    	hminusK.y = -hminusK.y;
+
+    	//h0k = vec4(0.5, 0.4, 0.3, 1.0);
+    	h0k = vec4(hK.x, hK.y, hminusK.x, hminusK.y);
+    }
   </script>
 
   <script id="htkfs" type="notjs">
-#version 300 es
-precision mediump float;
+    #version 300 es
+    precision highp float;
 
-// layers 
-// VA is JXY
-#define LAYER_Y_JXY_JXX_JYY 0
-#define LAYER_DX_DZ_SX_SZ 1
+    // layers
+    // VA is JXY
+    #define LAYER_Y_JXY_JXX_JYY 0
+    #define LAYER_DX_DZ_SX_SZ 1
 
-// cascade layers
-#define LAYER_Y	        0
-#define LAYER_DX	    1
-#define LAYER_DZ        2
-#define LAYER_SX	    3
-#define LAYER_SZ	    4
-#define LAYER_VA_JXY	5
-#define LAYER_JXX   	6
-#define LAYER_JYY   	7
+    // cascade layers
+    #define LAYER_Y	        0
+    #define LAYER_DX	    1
+    #define LAYER_DZ        2
+    #define LAYER_SX	    3
+    #define LAYER_SZ	    4
+    #define LAYER_VA_JXY	5
+    #define LAYER_JXX   	6
+    #define LAYER_JYY   	7
 
-//#define TEXTURE_GRADS
+    //#define TEXTURE_GRADS
 
-//#define USE_NOISE
+    //#define USE_NOISE
 
-#define COMPUTE_SKY_FOR_REFLECTION
+    #define COMPUTE_SKY_FOR_REFLECTION
 
-// foam
-#define NO_FOAM 0
-#define USE_JACOBIAN 1
-#define USE_VERTICAL_ACCELERATION 2
-#define FOAM USE_JACOBIAN
+    // foam
+    #define NO_FOAM 0
+    #define USE_JACOBIAN 1
+    #define USE_VERTICAL_ACCELERATION 2
+    #define FOAM USE_JACOBIAN
 
-//#define TESTING_COLOR_DEPTHS
-//#define TESTING_COLORS	
-
-
-#define M_PI 3.1415926535897932384626433832795
-#define G 9.81
-
-#define RANDOM_UNIFORM 0
-// normal dist can be computed with Box-Muller transform
-#define RANDOM_NORMAL 1
-// if X is from a normal distribution, then exp(X) follows a log distribution
-#define RANDOM_LOG 2
-// if X is uniform on [0,1] then −log(X) follows an exponential distribution
-#define RANDOM_EXP 3
+    //#define TESTING_COLOR_DEPTHS
+    //#define TESTING_COLORS
 
 
-#define DISPERSION_DEEP 0
-#define DISPERSION_SHALLOW 1
-#define DISPERSION_ CAPILLARY 2 
+    #define M_PI 3.1415926535897932384626433832795
+    #define G 9.81
+
+    #define RANDOM_UNIFORM 0
+    // normal dist can be computed with Box-Muller transform
+    #define RANDOM_NORMAL 1
+    // if X is from a normal distribution, then exp(X) follows a log distribution
+    #define RANDOM_LOG 2
+    // if X is uniform on [0,1] then −log(X) follows an exponential distribution
+    #define RANDOM_EXP 3
 
 
-#define DIRECTIONAL_COS_POWER 0
-#define DIRECTIONAL_MITSUYASU 1
-#define DIRECTIONAL_HASSELMANN 2
-#define DIRECTIONAL_DONNELAN_BANNER 3
-#define DIRECTIONAL_HORVATH_MITSUYASU 4
-#define DIRECTIONAL_HORVATH_HASSELMANN 5
-#define DIRECTIONAL_HORVATH_DONNELAN_BANNER 6
-
-#define SPECTRUM_PHILLIPS 0
-#define SPECTRUM_PIERSON_MOSKOWITZ 1
-#define SPECTRUM_JONSWAP 2
-#define SPECTRUM_DONNELAN_JONSWAP 3
-#define SPECTRUM_TMA 4
-#define SPECTRUM_UNIFIED 5
-#define SPECTRUM_PIERSON_MOSKOWITZ_HS 6
-#define SPECTRUM_BRETSCHNEIDER 7
-#define SPECTRUM_OCHI 8
-#define SPECTRUM_OCHI_HS 9
+    #define DISPERSION_DEEP 0
+    #define DISPERSION_SHALLOW 1
+    #define DISPERSION_ CAPILLARY 2
 
 
-// ------------------------------
-// Dispersion
-// ------------------------------
+    #define DIRECTIONAL_COS_POWER 0
+    #define DIRECTIONAL_MITSUYASU 1
+    #define DIRECTIONAL_HASSELMANN 2
+    #define DIRECTIONAL_DONNELAN_BANNER 3
+    #define DIRECTIONAL_HORVATH_MITSUYASU 4
+    #define DIRECTIONAL_HORVATH_HASSELMANN 5
+    #define DIRECTIONAL_HORVATH_DONNELAN_BANNER 6
 
-float getDispersionW(float k, float depth, int dispersionMode) {
-
-	float tension = 0.074; // N/m
-	float density = 1000.0; // Kg/m3
-	
-	// deep waters
-	if (dispersionMode == DISPERSION_DEEP) 
-		return sqrt(k * G);
-	// shallow waters	
-	else if (dispersionMode == DISPERSION_SHALLOW)	
-		return sqrt(k * G * tanh(k*depth));
-	else  // DISPERSION_ CAPILLARY
-		return sqrt((G * k + pow(k,3.0) * tension/density) * tanh(k*depth));
-}
-
-
-float getDispersionDerivative(float k, float depth, int dispersionMode) {
-
-	float tension = 0.074; // N/m
-	float density = 1000.0; // Kg/m3
-	float w = getDispersionW(k, depth, dispersionMode);
-	
-	// deep waters
-	if (dispersionMode == DISPERSION_DEEP) 
-		return G * 0.5f / w; 
-	// shallow waters	
-	else if (dispersionMode == DISPERSION_SHALLOW) {
-		float dk = depth * k;
-		float th = tanh(dk);
-		return 0.5f * sqrt(9.81f / (k*th)) * (th + dk*(1.0 - th*th));
-	}
-	else { // DISPERSION_ CAPILLARY
-		float dk = depth * k;
-		float th = tanh(dk);
-		float b = tension/density;
-		return 0.5f * ((9.81f + 3.0 * b*k*k)*th + dk * (k*k*b + 9.81f) * pow(1.0f / cosh(dk), 2.0)) / w;
-	}
-}
+    #define SPECTRUM_PHILLIPS 0
+    #define SPECTRUM_PIERSON_MOSKOWITZ 1
+    #define SPECTRUM_JONSWAP 2
+    #define SPECTRUM_DONNELAN_JONSWAP 3
+    #define SPECTRUM_TMA 4
+    #define SPECTRUM_UNIFIED 5
+    #define SPECTRUM_PIERSON_MOSKOWITZ_HS 6
+    #define SPECTRUM_BRETSCHNEIDER 7
+    #define SPECTRUM_OCHI 8
+    #define SPECTRUM_OCHI_HS 9
 
 
-in vec2 texCoordV;
+    // ------------------------------
+    // Dispersion
+    // ------------------------------
 
-layout (location = 0) out vec4 htk_Layer0;
-layout (location = 1) out vec4 htk_Layer1; 
+    float getDispersionW(float k, float depth, int dispersionMode) {
 
-uniform sampler2D h0k;
+    	float tension = 0.074; // N/m
+    	float density = 1000.0; // Kg/m3
 
-uniform int width;
-uniform int L;
-uniform float timer;
-uniform int dispersionMode;
-uniform float depth;
+    	// deep waters
+    	if (dispersionMode == DISPERSION_DEEP)
+    		return sqrt(k * G);
+    	// shallow waters
+    	else if (dispersionMode == DISPERSION_SHALLOW)
+    		return sqrt(k * G * tanh(k*depth));
+    	else  // DISPERSION_ CAPILLARY
+    		return sqrt((G * k + pow(k,3.0) * tension/density) * tanh(k*depth));
+    }
 
 
-vec2 mult(vec2 v0, vec2 v1) {
-	return vec2(v0.x * v1.x - v0.y * v1.y,
-				v0.x * v1.y + v0.y * v1.x);
-}
+    float getDispersionDerivative(float k, float depth, int dispersionMode) {
 
-vec2 conj(vec2 v){
-	return vec2(v.x, -v.y);
-}
+    	float tension = 0.074; // N/m
+    	float density = 1000.0; // Kg/m3
+    	float w = getDispersionW(k, depth, dispersionMode);
 
-void main(void) {
+    	// deep waters
+    	if (dispersionMode == DISPERSION_DEEP)
+    		return G * 0.5f / w;
+    	// shallow waters
+    	else if (dispersionMode == DISPERSION_SHALLOW) {
+    		float dk = depth * k;
+    		float th = tanh(dk);
+    		return 0.5f * sqrt(9.81f / (k*th)) * (th + dk*(1.0 - th*th));
+    	}
+    	else { // DISPERSION_ CAPILLARY
+    		float dk = depth * k;
+    		float th = tanh(dk);
+    		float b = tension/density;
+    		return 0.5f * ((9.81f + 3.0 * b*k*k)*th + dk * (k*k*b + 9.81f) * pow(1.0f / cosh(dk), 2.0)) / w;
+    	}
+    }
 
-//	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DY), 
-//		texelFetch(tilde_h0k, ivec2(gl_GlobalInvocationID.xy),0));
-//	return;	
-	float t = (timer+1e7) / 1000.0;
-	//float t = timer/1000;
-	ivec2 pos = ivec2(texCoordV * 512.0);
 
-	int kx = pos.x >= width/2 ? pos.x - width: pos.x;
-	int kz = pos.y >= width/2 ? pos.y - width: pos.y;
-	float whalf = float(width) / 2.0;
+    in vec2 texCoordV;
 
-	vec2 k = vec2(kx, kz) * 2.0 * M_PI/float(L);
-	
-	float magnitude = length(k);
-//	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DY), vec4(magnitude,depth,k));
-//	return;	
-	if (magnitude < 0.00000000001) magnitude = 0.00000000001;
-	
-	float w = getDispersionW(magnitude, depth, dispersionMode);
-	
-	vec4 spectrum = texelFetch(h0k, ivec2(texCoordV * 512.0),0);
-	int x,y;
-	x = (width - int(texCoordV.x * 512.0)) % width;
-	y = (width - int(texCoordV.y * 512.0)) % width;
-	vec4 spectrumC = texelFetch(h0k, ivec2(x,y),0);
+    layout (location = 0) out vec4 htk_Layer0;
+    layout (location = 1) out vec4 htk_Layer1;
 
-	vec2 fourier_amp = spectrum.xy;
-	vec2 fourier_amp_conj = spectrumC.xy;
-	fourier_amp_conj.y = -fourier_amp_conj.y;
-	
-	float cosinus = cos(w*t);
-	float sinus   = sin(w*t);
-	vec2 exp_iwt = vec2(cosinus, sinus);
-	vec2 exp_iwt_inv = vec2(cosinus, -sinus);
+    uniform sampler2D h0k;
 
-	// dy
-	vec2 h_k_t_dy = mult(fourier_amp, exp_iwt) + mult(fourier_amp_conj, exp_iwt_inv);
-//	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DY), vec4(h_k_t_dy, cosinus, sinus));
-//	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DY), vec4(fourier_amp, fourier_amp_conj));
-//	return;	
+    uniform int width;
+    uniform int L;
+    uniform float timer;
+    uniform int dispersionMode;
+    uniform float depth;
 
-	// dx
-	vec2 dx = vec2(0.0, -k.x/magnitude);
-	vec2 h_k_t_dx = mult(dx, h_k_t_dy);
-	
-	// dz
-	vec2 dz = vec2(0.0, -k.y/magnitude);
-	vec2 h_k_t_dz = mult(dz, h_k_t_dy);
-	
-	// sx
-	dx = vec2(0.0, k.x);
-	vec2 sx = mult(dx, h_k_t_dy);
 
-	// sz
-	dz = vec2(0.0, k.y);
-	vec2 sz = mult(dz, h_k_t_dy);
-	
-#if (FOAM == USE_VERTICAL_ACCELERATION)
+    vec2 mult(vec2 v0, vec2 v1) {
+    	return vec2(v0.x * v1.x - v0.y * v1.y,
+    				v0.x * v1.y + v0.y * v1.x);
+    }
 
-	vec2 a0k = fourier_amp * w * w;
-	vec2 a0minusk = fourier_amp_conj * w * w;
-	vec2 a = mult(a0k, exp_iwt) + mult(a0minusk, exp_iwt_inv);
-	vec2 b = vec2(0);
-	
-#elif (FOAM == USE_JACOBIAN)
+    vec2 conj(vec2 v){
+    	return vec2(v.x, -v.y);
+    }
 
-	vec2 daux = vec2(0.0, -k.x);
-	vec2 jxx = mult(daux, h_k_t_dx);
-	vec2 a = mult(daux, h_k_t_dz);
-	daux = vec2(0.0, -k.y);
-	vec2 jyy = mult(daux, h_k_t_dz);
-	vec2 b = jxx +vec2(-jyy.y, jyy.x);
-//	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_JXXYY), vec4(jxx, jyy));
-	
-#else
-	vec2 a = vec2(0);
-#endif
-	vec2 dy = h_k_t_dy + vec2(-a.y, a.x);
-	vec2 dxz = h_k_t_dx + vec2(-h_k_t_dz.y, h_k_t_dz.x);
-	vec2 sxz = sx + vec2(-sz.y, sz.x);
-	//imageStore(tilde_hkt, ivec3(texCoordV * 512, LAYER_Y_JXY_JXX_JYY), vec4(dy, b));
-	//imageStore(tilde_hkt, ivec3(texCoordV * 512, LAYER_DX_DZ_SX_SZ), vec4(dxz,sxz));
+    void main(void) {
 
-	htk_Layer0 = vec4(dy.x, dy.y, b.x, b.y);
-	htk_Layer1 = vec4(dxz.x, dxz.y, sxz.x, sxz.y);
+    //	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DY),
+    //		texelFetch(tilde_h0k, ivec2(gl_GlobalInvocationID.xy),0));
+    //	return;
+    	float t = (timer+1e7) / 1000.0;
+    	//float t = timer/1000;
+    	ivec2 pos = ivec2(texCoordV * 512.0);
 
-//	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DXZ), vec4(h_k_t_dx, h_k_t_dz));
-//	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_SXZ), vec4(sx, sz));
-	
-}
+    	int kx = pos.x >= width/2 ? pos.x - width: pos.x;
+    	int kz = pos.y >= width/2 ? pos.y - width: pos.y;
+    	float whalf = float(width) / 2.0;
+
+    	vec2 k = vec2(kx, kz) * 2.0 * M_PI/float(L);
+
+    	float magnitude = length(k);
+    //	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DY), vec4(magnitude,depth,k));
+    //	return;
+    	if (magnitude < 0.00000000001) magnitude = 0.00000000001;
+
+    	float w = getDispersionW(magnitude, depth, dispersionMode);
+
+    	vec4 spectrum = texelFetch(h0k, ivec2(texCoordV * 512.0),0);
+    	int x,y;
+    	x = (width - int(texCoordV.x * 512.0)) % width;
+    	y = (width - int(texCoordV.y * 512.0)) % width;
+    	vec4 spectrumC = texelFetch(h0k, ivec2(x,y),0);
+
+    	vec2 fourier_amp = spectrum.xy;
+    	vec2 fourier_amp_conj = spectrumC.xy;
+    	fourier_amp_conj.y = -fourier_amp_conj.y;
+
+    	float cosinus = cos(w*t);
+    	float sinus   = sin(w*t);
+    	vec2 exp_iwt = vec2(cosinus, sinus);
+    	vec2 exp_iwt_inv = vec2(cosinus, -sinus);
+
+    	// dy
+    	vec2 h_k_t_dy = mult(fourier_amp, exp_iwt) + mult(fourier_amp_conj, exp_iwt_inv);
+    //	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DY), vec4(h_k_t_dy, cosinus, sinus));
+    //	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DY), vec4(fourier_amp, fourier_amp_conj));
+    //	return;
+
+    	// dx
+    	vec2 dx = vec2(0.0, -k.x/magnitude);
+    	vec2 h_k_t_dx = mult(dx, h_k_t_dy);
+
+    	// dz
+    	vec2 dz = vec2(0.0, -k.y/magnitude);
+    	vec2 h_k_t_dz = mult(dz, h_k_t_dy);
+
+    	// sx
+    	dx = vec2(0.0, k.x);
+    	vec2 sx = mult(dx, h_k_t_dy);
+
+    	// sz
+    	dz = vec2(0.0, k.y);
+    	vec2 sz = mult(dz, h_k_t_dy);
+
+    #if (FOAM == USE_VERTICAL_ACCELERATION)
+
+    	vec2 a0k = fourier_amp * w * w;
+    	vec2 a0minusk = fourier_amp_conj * w * w;
+    	vec2 a = mult(a0k, exp_iwt) + mult(a0minusk, exp_iwt_inv);
+    	vec2 b = vec2(0);
+
+    #elif (FOAM == USE_JACOBIAN)
+
+    	vec2 daux = vec2(0.0, -k.x);
+    	vec2 jxx = mult(daux, h_k_t_dx);
+    	vec2 a = mult(daux, h_k_t_dz);
+    	daux = vec2(0.0, -k.y);
+    	vec2 jyy = mult(daux, h_k_t_dz);
+    	vec2 b = jxx +vec2(-jyy.y, jyy.x);
+    //	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_JXXYY), vec4(jxx, jyy));
+
+    #else
+    	vec2 a = vec2(0);
+    #endif
+    	vec2 dy = h_k_t_dy + vec2(-a.y, a.x);
+    	vec2 dxz = h_k_t_dx + vec2(-h_k_t_dz.y, h_k_t_dz.x);
+    	vec2 sxz = sx + vec2(-sz.y, sz.x);
+    	//imageStore(tilde_hkt, ivec3(texCoordV * 512, LAYER_Y_JXY_JXX_JYY), vec4(dy, b));
+    	//imageStore(tilde_hkt, ivec3(texCoordV * 512, LAYER_DX_DZ_SX_SZ), vec4(dxz,sxz));
+
+    	htk_Layer0 = vec4(dy.x, dy.y, b.x, b.y);
+    	htk_Layer1 = vec4(dxz.x, dxz.y, sxz.x, sxz.y);
+
+    //	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DXZ), vec4(h_k_t_dx, h_k_t_dz));
+    //	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_SXZ), vec4(sx, sz));
+
+    }
   </script>
 
-  <script id="ffthfs" type="notjs">
-	#version 300 es
-	
-	// layers 
-	// VA is JXY
-	#define LAYER_Y_JXY_JXX_JYY 0
-	#define LAYER_DX_DZ_SX_SZ 1
-	
-	// cascade layers
-	#define LAYER_Y	        0
-	#define LAYER_DX	    1
-	#define LAYER_DZ        2
-	#define LAYER_SX	    3
-	#define LAYER_SZ	    4
-	#define LAYER_VA_JXY	5
-	#define LAYER_JXX   	6
-	#define LAYER_JYY   	7
-	
-	//#define TEXTURE_GRADS
-	
-	//#define USE_NOISE
-	
-	#define COMPUTE_SKY_FOR_REFLECTION
-	
-	// foam
-	#define NO_FOAM 0
-	#define USE_JACOBIAN 1
-	#define USE_VERTICAL_ACCELERATION 2
-	#define FOAM USE_JACOBIAN
-	
-	//#define TESTING_COLOR_DEPTHS
-	//#define TESTING_COLORS	
-	
-	
-	#define M_PI 3.1415926535897932384626433832795
-	#define G 9.81
-	
-	#define RANDOM_UNIFORM 0
-	// normal dist can be computed with Box-Muller transform
-	#define RANDOM_NORMAL 1
-	// if X is from a normal distribution, then exp(X) follows a log distribution
-	#define RANDOM_LOG 2
-	// if X is uniform on [0,1] then −log(X) follows an exponential distribution
-	#define RANDOM_EXP 3
-	
-	
-	#define DISPERSION_DEEP 0
-	#define DISPERSION_SHALLOW 1
-	#define DISPERSION_ CAPILLARY 2 
-	
-	
-	#define DIRECTIONAL_COS_POWER 0
-	#define DIRECTIONAL_MITSUYASU 1
-	#define DIRECTIONAL_HASSELMANN 2
-	#define DIRECTIONAL_DONNELAN_BANNER 3
-	#define DIRECTIONAL_HORVATH_MITSUYASU 4
-	#define DIRECTIONAL_HORVATH_HASSELMANN 5
-	#define DIRECTIONAL_HORVATH_DONNELAN_BANNER 6
-	
-	#define SPECTRUM_PHILLIPS 0
-	#define SPECTRUM_PIERSON_MOSKOWITZ 1
-	#define SPECTRUM_JONSWAP 2
-	#define SPECTRUM_DONNELAN_JONSWAP 3
-	#define SPECTRUM_TMA 4
-	#define SPECTRUM_UNIFIED 5
-	#define SPECTRUM_PIERSON_MOSKOWITZ_HS 6
-	#define SPECTRUM_BRETSCHNEIDER 7
-	#define SPECTRUM_OCHI 8
-	#define SPECTRUM_OCHI_HS 9
-	
-	
-	in vec2 texCoordV;
-	
-	// ping pong textures
-	layout (location = 0) out vec4 out_Layer0;
-	layout (location = 1) out vec4 out_Layer1;
+  <script id="horizontal_fft" type="notjs">
+       #version 300 es
+      	precision highp float;
 
-	uniform sampler2D inTexture_Layer0;
-	uniform sampler2D inTexture_Layer1;
-	
-	uniform int pingpong;
-	uniform int log_width;
-	uniform int stage;
-	
-	
-	vec4 complexMultTwice(vec2 v0, vec4 v1) {
-		return vec4(v0.x * v1.x - v0.y * v1.y,
-					v0.x * v1.y + v0.y * v1.x,
-					v0.x * v1.z - v0.y * v1.w,
-					v0.x * v1.w + v0.y * v1.z);
-	}
-	
-	
-	vec2 w(int k, int nn) {
-	
-		float it =  2 * k * M_PI / nn;
-		return vec2(cos(it), sin(it));
-	}
-	
-	
-	void main() {
-		int line = int(texCoordV.x * 512);
-		uint column = uint(texCoordV.y * 512); //cuidado
-		
-		int iter = int(pow(2,log_width-1));
-		
-		int halfGroupSize = int(pow(2, stage));
-		int groupSize = 2 * halfGroupSize;
-		int k = line % halfGroupSize;
-		int group = line / halfGroupSize;
-		int shift = int(pow(2, stage));
-		int groupShift = shift * 2;
-	
-		int index = k + group * groupShift;
-	
-		vec2 ww = w(k, groupShift);
-		
-		vec4 elemk, elemks, elemxz, elemxzs; 
-		
-		if (stage == 0) {
-		// when stage = 0 use bit reverse indices
-			uint br = bitfieldReverse(uint(index));
-			br = bitfieldExtract(br, 32 - log_width, log_width);
-			uint brs = bitfieldReverse(uint(index + shift));
-			brs = bitfieldExtract(brs, 32 - log_width, log_width);
-			elemk = texture(inTexture_Layer0, vec2(br, column));
-			elemk = texture(inTexture_Layer0, vec2(brs, column));
-			elemk = texture(inTexture_Layer1, vec2(br, column));
-			elemk = texture(inTexture_Layer1, vec2(brs, column));
-		}
-		else {
-			elemk = texture(inTexture_Layer0, vec2(index, column));
-			elemk = texture(inTexture_Layer0, vec2(index + shift), column));
-			elemk = texture(inTexture_Layer1, vec2(index, column));
-			elemk = texture(inTexture_Layer1, vec2(index + shift, column));
-		}
-		// compute the twiddle factor
-		 
-			
-		// write the outputs
-		vec4 cm = complexMultTwice(ww, elemks);
-		out_Layer0 = elemk + cm;
-		imageStore(pingpong1, ivec3(index, column, LAYER_Y_JXY_JXX_JYY), elemk + cm);
-		imageStore(pingpong1, ivec3(index + shift, column, LAYER_Y_JXY_JXX_JYY), elemk - cm);
-	
-		cm = complexMultTwice(ww,elemxzs);
-		imageStore(pingpong1, ivec3(index, column, LAYER_DX_DZ_SX_SZ), elemxz + cm);
-		imageStore(pingpong1, ivec3(index + shift, column, LAYER_DX_DZ_SX_SZ), elemxz - cm);
-	
-	
-	}
+      	const float PI = 3.14159265359;
+
+     		uniform sampler2D u_input;
+
+      	uniform float u_transformSize;
+      	uniform float u_subtransformSize;
+
+      	in vec2 texCoordV;
+
+    layout (location = 0) out vec4 FragColor;
+
+      	vec2 multiplyComplex (vec2 a, vec2 b) {
+          return vec2(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+      	}
+
+      	void main (void) {
+
+          float index = texCoordV.x * u_transformSize - 0.5;
+
+          float evenIndex = floor(index / u_subtransformSize) * (u_subtransformSize * 0.5) + mod(index, u_subtransformSize * 0.5);
+
+          //transform two complex sequences simultaneously
+          vec4 even = texture(u_input, vec2(evenIndex + 0.5, gl_FragCoord.y) / u_transformSize).rgba;
+          vec4 odd = texture(u_input, vec2(evenIndex + u_transformSize * 0.5 + 0.5, gl_FragCoord.y) / u_transformSize).rgba;
+
+          float twiddleArgument = -2.0 * PI * (index / u_subtransformSize);
+          vec2 twiddle = vec2(cos(twiddleArgument), sin(twiddleArgument));
+
+          vec2 outputA = even.xy + multiplyComplex(twiddle, odd.xy);
+          vec2 outputB = even.zw + multiplyComplex(twiddle, odd.zw);
+
+          FragColor = vec4(outputA, outputB);
+
+      	}
   </script>
 
+  <script id="vertical_fft" type="notjs">
+    #version 300 es
+    precision highp float;
 
-  <script id="drawTex" type="notjs">
-	#version 300 es
-  	precision mediump float;
-  	uniform sampler2D tex;
-	in vec2 texCoordV;
-  	out vec4 outColor;
-  	void main() {
-    	vec4 colors;
-		colors = texture(tex, texCoordV * 512.0);
-    	if(int(texCoordV.x * 512.0) == 10) outColor = vec4(1.0, 0.0, 0.0, 1.0);
-      	else outColor = vec4(0.0, 1.0, 0.0, 1.0);
-  	}
+    const float PI = 3.14159265359;
+
+    uniform sampler2D u_input;
+
+    uniform float u_transformSize;
+    uniform float u_subtransformSize;
+
+    in vec2 texCoordV;
+    layout (location = 0) out vec4 FragColor;
+
+    vec2 multiplyComplex (vec2 a, vec2 b) {
+      return vec2(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+    }
+
+    void main (void) {
+
+    float index = texCoordV.y * u_transformSize - 0.5;
+
+    float evenIndex = floor(index / u_subtransformSize) * (u_subtransformSize * 0.5) + mod(index, u_subtransformSize * 0.5);
+
+    //transform two complex sequences simultaneously
+    vec4 even = texture(u_input, vec2(gl_FragCoord.x, evenIndex + 0.5) / u_transformSize).rgba;
+    vec4 odd = texture(u_input, vec2(gl_FragCoord.x, evenIndex + u_transformSize * 0.5 + 0.5) / u_transformSize).rgba;
+
+
+    float twiddleArgument = -2.0 * PI * (index / u_subtransformSize);
+    vec2 twiddle = vec2(cos(twiddleArgument), sin(twiddleArgument));
+
+    vec2 outputA = even.xy + multiplyComplex(twiddle, odd.xy);
+    vec2 outputB = even.zw + multiplyComplex(twiddle, odd.zw);
+
+    FragColor = vec4(outputA, outputB);
+    }
+  </script>
+
+  <script id="ocean_vert" type="notjs">
+    	#version 300 es
+    	precision highp float;
+    	//#define TEXTURE_GRADS
+
+    //#define USE_NOISE
+
+    #define COMPUTE_SKY_FOR_REFLECTION
+
+    // foam
+    #define NO_FOAM 0
+    #define USE_JACOBIAN 1
+    #define USE_VERTICAL_ACCELERATION 2
+    #define FOAM USE_JACOBIAN
+
+    //#define TESTING_COLOR_DEPTHS
+    //#define TESTING_COLORS
+
+
+    #define M_PI 3.1415926535897932384626433832795
+    #define G 9.81
+
+    #define RANDOM_UNIFORM 0
+    // normal dist can be computed with Box-Muller transform
+    #define RANDOM_NORMAL 1
+    // if X is from a normal distribution, then exp(X) follows a log distribution
+    #define RANDOM_LOG 2
+    // if X is uniform on [0,1] then −log(X) follows an exponential distribution
+    #define RANDOM_EXP 3
+
+
+    #define DISPERSION_DEEP 0
+    #define DISPERSION_SHALLOW 1
+    #define DISPERSION_ CAPILLARY 2
+
+
+    #define DIRECTIONAL_COS_POWER 0
+    #define DIRECTIONAL_MITSUYASU 1
+    #define DIRECTIONAL_HASSELMANN 2
+    #define DIRECTIONAL_DONNELAN_BANNER 3
+    #define DIRECTIONAL_HORVATH_MITSUYASU 4
+    #define DIRECTIONAL_HORVATH_HASSELMANN 5
+    #define DIRECTIONAL_HORVATH_DONNELAN_BANNER 6
+
+    #define SPECTRUM_PHILLIPS 0
+    #define SPECTRUM_PIERSON_MOSKOWITZ 1
+    #define SPECTRUM_JONSWAP 2
+    #define SPECTRUM_DONNELAN_JONSWAP 3
+    #define SPECTRUM_TMA 4
+    #define SPECTRUM_UNIFIED 5
+    #define SPECTRUM_PIERSON_MOSKOWITZ_HS 6
+    #define SPECTRUM_BRETSCHNEIDER 7
+    #define SPECTRUM_OCHI 8
+    #define SPECTRUM_OCHI_HS 9
+
+    // layers
+    // VA is JXY
+    #define LAYER_Y_JXY_JXX_JYY 0
+    #define LAYER_DX_DZ_SX_SZ 1
+
+    // cascade layers
+    #define LAYER_Y	        0
+    #define LAYER_DX	    1
+    #define LAYER_DZ        2
+    #define LAYER_SX	    3
+    #define LAYER_SZ	    4
+    #define LAYER_VA_JXY	5
+    #define LAYER_JXX   	6
+    #define LAYER_JYY   	7
+
+
+
+    uniform sampler2D htk_Layer0;
+    uniform sampler2D htk_Layer1;
+    uniform int L;
+    uniform int heightMapSize;
+    uniform float choppyFactor;
+
+    uniform mat4 m_pvm;
+    uniform mat3 m_normal;
+    uniform mat4 m_view;
+    uniform vec4 l_dir;
+
+    in vec4 position;
+
+    out vec3 data_l_dir;
+    out vec3 data_pos;
+    out vec2 data_texCoord;
+    out vec3 data_normal;
+
+    void main() {
+
+    	vec2 tc = (vec2(position.xz) + vec2(float(heightMapSize) * 0.5)) / float(heightMapSize);
+
+    	data_l_dir = vec3(normalize( (m_view * l_dir)));
+    	data_l_dir = vec3(normalize( (l_dir)));
+
+    	float scaleFactor = float(heightMapSize)/float(L);
+    	vec4 dy = texture(htk_Layer0, tc) * scaleFactor;
+    	float h = dy.x  ;
+    	vec4 ds = texture(htk_Layer1, tc)  * scaleFactor;
+    	vec2 dxz = ds.xy * choppyFactor;// * scaleFactor;
+
+    	data_texCoord = tc;
+
+    	vec2 slope = ds.zw;
+    	slope = vec2(slope.x/(1.0 + choppyFactor * dy.z), slope.y/(1.0 + choppyFactor * dy.w));
+    	data_normal = normalize(vec3(-slope.x, 1, -slope.y));
+
+    	//data_pos = vec3(position.x * L * 0.5f - dxz.x, h, position.z * L*0.5f - dxz.y);
+    	data_pos = vec3(position.x  - dxz.x, h, position.z - dxz.y);
+    	gl_Position = m_pvm * vec4(data_pos, 1);
+      //gl_Position = m_pvm * position;
+      }
+  </script>
+
+  <script id="ocean_frag" type="notjs">
+    #version 300 es
+    precision highp float;
+    uniform sampler2D htk_Layer0;
+    uniform sampler2D htk_Layer1;
+    uniform sampler2D voronoi, foam;
+    uniform vec3 camPos;
+
+    uniform float choppyFactor;
+
+    const float indAir = 1.000293; //air refraction index
+    const float indWater = 1.333; //water index of refraction
+    const float Eta = indAir/indWater;
+    float power = 5.0;
+
+
+    in vec3 data_l_dir;
+    in vec3 data_pos;
+    in vec2 data_texCoord;
+    in vec3 data_normal;
+
+    out vec4 outputF;
+
+
+    //#define TEXTURE_GRADS
+
+    //#define USE_NOISE
+
+    #define COMPUTE_SKY_FOR_REFLECTION
+
+    // foam
+    #define NO_FOAM 0
+    #define USE_JACOBIAN 1
+    #define USE_VERTICAL_ACCELERATION 2
+    #define FOAM USE_JACOBIAN
+
+    //#define TESTING_COLOR_DEPTHS
+    //#define TESTING_COLORS
+
+
+    #define M_PI 3.1415926535897932384626433832795
+    #define G 9.81
+
+    #define RANDOM_UNIFORM 0
+    // normal dist can be computed with Box-Muller transform
+    #define RANDOM_NORMAL 1
+    // if X is from a normal distribution, then exp(X) follows a log distribution
+    #define RANDOM_LOG 2
+    // if X is uniform on [0,1] then −log(X) follows an exponential distribution
+    #define RANDOM_EXP 3
+
+
+    #define DISPERSION_DEEP 0
+    #define DISPERSION_SHALLOW 1
+    #define DISPERSION_ CAPILLARY 2
+
+
+    #define DIRECTIONAL_COS_POWER 0
+    #define DIRECTIONAL_MITSUYASU 1
+    #define DIRECTIONAL_HASSELMANN 2
+    #define DIRECTIONAL_DONNELAN_BANNER 3
+    #define DIRECTIONAL_HORVATH_MITSUYASU 4
+    #define DIRECTIONAL_HORVATH_HASSELMANN 5
+    #define DIRECTIONAL_HORVATH_DONNELAN_BANNER 6
+
+    #define SPECTRUM_PHILLIPS 0
+    #define SPECTRUM_PIERSON_MOSKOWITZ 1
+    #define SPECTRUM_JONSWAP 2
+    #define SPECTRUM_DONNELAN_JONSWAP 3
+    #define SPECTRUM_TMA 4
+    #define SPECTRUM_UNIFIED 5
+    #define SPECTRUM_PIERSON_MOSKOWITZ_HS 6
+    #define SPECTRUM_BRETSCHNEIDER 7
+    #define SPECTRUM_OCHI 8
+    #define SPECTRUM_OCHI_HS 9
+
+    // layers
+    // VA is JXY
+    #define LAYER_Y_JXY_JXX_JYY 0
+    #define LAYER_DX_DZ_SX_SZ 1
+
+    // cascade layers
+    #define LAYER_Y	        0
+    #define LAYER_DX	    1
+    #define LAYER_DZ        2
+    #define LAYER_SX	    3
+    #define LAYER_SZ	    4
+    #define LAYER_VA_JXY	5
+    #define LAYER_JXX   	6
+    #define LAYER_JYY   	7
+
+
+    // Sky stuff
+
+    uniform sampler2D sky;
+
+    #define LINEAR 0
+    #define EXPONENTIAL 1
+    uniform int sampling;
+
+    uniform int divisions;
+    uniform int divisionsLightRay;
+    uniform float exposure;
+
+    uniform vec3 betaR;
+    uniform float betaMf;
+    uniform float Hr;
+    uniform float Hm;
+    uniform float g;
+    uniform vec2 sunAngles;
+
+    const float PI = 3.14159265358979323846;
+    const float earthRadius = 6360000.0;
+    const float atmosRadius = 6420000.0;
+    const float fourPI = 4.0 * PI;
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // 					Sky stuff
+    ///////////////////////////////////////////////////////////////////////////
+
+    vec3 skyColor(vec3 dir, vec3 sunDir, vec3 origin);
+
+
+    vec4 computeSkyReflection(vec3 refl) {
+
+    	vec2 sunAnglesRad = vec2(sunAngles.x, sunAngles.y) * vec2(PI/180.0);
+    	vec3 sunDir = vec3(cos(sunAnglesRad.y) * sin(sunAnglesRad.x),
+    							 sin(sunAnglesRad.y),
+    							-cos(sunAnglesRad.y) * cos(sunAnglesRad.x));
+
+    #ifdef COMPUTE_SKY_FOR_REFLECTION
+    	return vec4(skyColor(refl, sunDir, vec3(0.0, earthRadius+100.0, 0.0)),1);
+    #else
+    	float phi = atan(refl.z, refl.x);
+    	float theta = acos(refl.y);
+    	float aux = tan(phi);
+    	float x = sqrt((1-cos(theta))/(1+aux*aux));
+    	float y = aux*x;
+    	vec2 tcSky = vec2(x, y);
+    	float ka = length(tcSky);
+    	if (ka >= 0.99)
+    		tcSky *= 0.99/ka;
+    //	tcSky.x = 1 - tcSky.x;
+    	tcSky = tcSky * 0.5 + 0.5;
+    	return texture(sky, tcSky );
+    #endif
+    }
+
+
+
+    float distToTopAtmosphere(vec3 origin, vec3 dir) {
+
+    	// project the center of the earth on to the ray
+    	vec3 u = vec3(-origin);
+    	// k is the signed distance from the origin to the projection
+    	float k = dot(dir,u);
+    	vec3 proj = origin + k * dir;
+
+    	// compute the distance from the projection to the atmosphere
+    	float aux = length(proj);
+    	float dist = sqrt(atmosRadius * atmosRadius - aux*aux);
+
+    	dist += k;
+    	return dist;
+    }
+
+
+    void initSampling(in float dist, in int div, out float quotient, out float segLength) {
+
+    	if (sampling == EXPONENTIAL) {
+    		quotient =  pow(dist, 1.0/(float(div)));
+    		//segLength = quotient - 1;
+    	}
+    	else { // linear sampling
+    		segLength = dist/float(div);
+    	}
+    }
+
+
+    void computeSegLength(float quotient, float current, inout float segLength) {
+
+    	if (sampling == EXPONENTIAL) {
+    		segLength = current * quotient - current;
+    	}
+    	else { // linear sampling
+    	}
+    }
+
+
+    vec3 skyColor(vec3 dir, vec3 sunDir, vec3 origin) {
+
+    	float dist = distToTopAtmosphere(origin, dir);
+
+    	float quotient, quotientLight, segLengthLight, segLength;
+
+    	float cosViewSun = dot(dir, sunDir);
+
+    	vec3 betaM = vec3(betaMf);
+
+    	vec3 rayleigh = vec3(0);
+    	vec3 mie = vec3(0);
+
+    	float opticalDepthRayleigh = 0.0;
+    	float opticalDepthMie = 0.0;
+
+    	// phase functions
+    	float phaseR = 0.75 * (1.0 + cosViewSun * cosViewSun);
+
+    	float aux = 1.0 + g*g - 2.0*g*cosViewSun;
+    	float phaseM = 3.0 * (1.0 - g*g) * (1.0 + cosViewSun * cosViewSun) /
+    					(2.0 * (2.0 + g*g) * pow(aux, 1.5));
+
+    	float current = 1.0;
+    	initSampling(dist, divisions, quotient, segLength);
+    	float height;
+    	for(int i = 0; i < divisions; ++i) {
+    		computeSegLength(quotient, current, segLength);
+    		vec3 samplePos = origin + (current + segLength * 0.5) * dir;
+    		height = length(samplePos) - earthRadius;
+    		if (height < 0.0) {
+    			break;
+    		}
+    		float hr = exp(-height / Hr) * segLength;
+    		float hm = exp(-height / Hm) * segLength;
+    		opticalDepthRayleigh += hr;
+    		opticalDepthMie += hm;
+
+    		float distLightRay = distToTopAtmosphere(samplePos, sunDir);
+    		initSampling(distLightRay, divisionsLightRay, quotientLight, segLengthLight);
+    		float currentLight = 1.0;
+    		float opticalDepthLightR = 0.0;
+    		float opticalDepthLightM = 0.0;
+    		int j = 0;
+
+    		for (; j < divisionsLightRay; ++j) {
+    			computeSegLength(quotientLight, currentLight, segLengthLight);
+    			vec3 sampleLightPos = samplePos + (currentLight + segLengthLight * 0.5) * sunDir;
+    			float heightLight = length(sampleLightPos) - earthRadius;
+    			if (heightLight < 0.0){
+    				break;
+    			}
+
+    			opticalDepthLightR += exp(-heightLight / Hr) * segLengthLight;
+    			opticalDepthLightM += exp(-heightLight / Hm) * segLengthLight;
+    			currentLight += segLengthLight;
+
+    		}
+
+    		if (j == divisionsLightRay) {
+    			vec3 tau = fourPI * betaR * (opticalDepthRayleigh + opticalDepthLightR) +
+    					   fourPI * 1.1 * betaM *  (opticalDepthMie + opticalDepthLightM);
+    			vec3 att = exp(-tau);
+    			rayleigh += att * hr;
+    			mie += att * hm;
+    		}
+
+    		current += segLength;
+    	}
+    	vec3 result = (rayleigh *betaR * phaseR + mie * betaM * phaseM) * 20.0;
+    	vec3 white_point = vec3(1.0);
+    	result = pow(vec3(1.0) - exp(-result / white_point * exposure), vec3(1.0 / 2.2));
+
+    	return result;
+    }
+
+
+
+    float schlickRatio (vec3 rayDirection, vec3 normal) {
+
+    	float f =  pow((1.0 - indWater) / (1.0 + indWater) , 2.0);
+    	float schlick = f + (1.0 - f) * pow(1.0 - dot(-rayDirection,normal), power);
+
+    	return clamp(schlick, 0.0 ,1.0);
+    }
+
+
+    // From white-caps master Dupuy and Bruneton
+    vec3 hdr(vec3 L) {
+    	L = L * 1.05;//hdrExposure;
+    	L.r = L.r < 1.413 ? pow(L.r * 0.38317, 1.0 / 2.2) : 1.0 - exp(-L.r);
+    	L.g = L.g < 1.413 ? pow(L.g * 0.38317, 1.0 / 2.2) : 1.0 - exp(-L.g);
+    	L.b = L.b < 1.413 ? pow(L.b * 0.38317, 1.0 / 2.2) : 1.0 - exp(-L.b);
+    	return L;
+    }
+
+
+
+
+
+    float computeFoamFactor() {
+
+    	float f = 0.0;
+
+    #if (FOAM == USE_VERTICAL_ACCELERATION)
+
+    #define minFoam 0
+    #define maxFoam 7
+    	float whiteCap = texture(htk_Layer0, data_texCoord).y * choppyFactor;
+    	vec4 foamV = texture(foam, data_texCoord*2.0);
+    	f = pow(smoothstep(1,7, whiteCap), 2.0);
+    	f = 2.0*f;
+    	outputF = outputF * (1.0-f) + foamV * f;
+
+    #elif (FOAM == USE_JACOBIAN)
+    	float jxx= 1.0, jyy = 1.0, jxy = 0.0;
+    	jxx += texture(htk_Layer0, data_texCoord).z * choppyFactor;
+    	jyy += texture(htk_Layer0, data_texCoord).w * choppyFactor;
+    	jxy += texture(htk_Layer0, data_texCoord).y * choppyFactor;
+
+    	float det = jxx * jyy - jxy*jxy;
+    	float whiteCap = det;
+
+    	vec4 foamV = texture(foam, data_texCoord*2.0);
+    	f = 1.0-smoothstep(0.0, 0.7, whiteCap);
+    	if (whiteCap < 0.0)
+    		f = 1.0;
+    #endif
+    	return f;
+    }
+
+
+    vec4 computeOceanColor(vec3 wn) {
+
+    	vec2 sunAnglesRad = vec2(sunAngles.x, sunAngles.y) * vec2(M_PI/180.0);
+    	vec3 sunDir = vec3(cos(sunAnglesRad.y) * sin(sunAnglesRad.x),
+    							 sin(sunAnglesRad.y),
+    							-cos(sunAnglesRad.y) * cos(sunAnglesRad.x));
+
+    	vec3 viewDir = normalize(data_pos - camPos);
+    	vec3 reflDir = normalize(reflect(viewDir, wn));
+    	if (reflDir.y < 0.0)
+    		reflDir.y = -reflDir.y;
+
+    	float spec = pow (max(0.0, dot(reflDir, sunDir)), 128.0);
+
+    	vec4 skyC = computeSkyReflection(reflDir);
+
+    	vec4 shallowColor = vec4(0.0, 0.64, 0.68, 1);
+    	vec4 deepColor = vec4(0.02, 0.05, 0.10, 1);
+
+    	float relativeHeight = clamp((data_pos.y - (-40.0)) / (80.0), 0.0, 1.0);
+    	vec4 heightColor = (relativeHeight * shallowColor + (1.0 - relativeHeight) * deepColor) * 0.8;
+    	float ratio = schlickRatio(viewDir, wn);
+    	float refCoeff = pow(max(dot(wn, -viewDir), 0.0), 0.3);	// Smaller power will have more concentrated reflect.
+    	vec4 reflectColor = (ratio) * skyC;
+    	float specCoef = min(0.1, pow(max(dot(viewDir, reflDir), 0.0), 64.0) * 3.0);
+
+    	//return skyC;
+    	vec4 c =  (1.0 - specCoef) * (heightColor+reflectColor) + vec4(spec) ;
+    	return c;// * skyC;
+
+    }
+
+
+
+    vec3 intersect(vec3 origin, vec3 direction, vec3 planeNormal, float D) {
+
+    	float calpha = dot(normalize(direction),normalize(-planeNormal));
+    	if (calpha > 0.0) {
+
+    		float k = (origin.y - D) * calpha;
+    		float x = origin.x + k * direction.x;
+    		float z = origin.z + k * direction.z;
+    		return vec3(x,D,z);
+    	}
+    	//caso o vetor refratado não intercete o fundo do mar
+    	else return vec3(0.0,-D*100.0,0.0);
+    }
+
+
+
+    void main() {
+
+    	vec2 slope = texture(htk_Layer1, data_texCoord).zw;
+    	vec3 wn = normalize(vec3( -slope.x,  1.0,  -slope.y));//
+
+    	vec4 color = computeOceanColor(wn);
+
+    #if (FOAM != NO_FOAM)
+    	vec4 foamV = texture(foam, data_texCoord);
+    	float f = computeFoamFactor();
+    	outputF = color * (1.0-f) + foamV * f;
+    #else
+    	outputF = color;
+    #endif
+    }
   </script>
 
   <script type="module">
-    import * as twgl from './twgl-full.module.js';
+    import * as twgl from "./twgl-full.module.js";
     const gl = document.querySelector("#c").getContext("webgl2");
-	gl.getExtension('EXT_color_buffer_float');
-    gl.getExtension('EXT_float_blend');
-    gl.getExtension('OES_texture_float_linear');
+    gl.getExtension("EXT_color_buffer_float");
+    gl.getExtension("EXT_float_blend");
+    gl.getExtension("OES_texture_float_linear");
+    const m4 = twgl.m4;
 
-	const startMS = new Date();
+    const startMS = new Date();
+    console.log("1");
 
-	//------------------------------------------create textures-----------------------------------------------------
+    //------------------------------------------create textures-----------------------------------------------------
 
-	const width = 512;
-  	const height = 512;
-	const level = 0;
+    const width = 512;
+    const height = 512;
+    const level = 0;
 
-	const h0k = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, h0k);
+    const h0k = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, h0k);
 
-	gl.texImage2D(gl.TEXTURE_2D, level, gl.RGBA32F, width, height, 0, 
-                gl.RGBA, gl.FLOAT, null);
-  
-  	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      level,
+      gl.RGBA32F,
+      width,
+      height,
+      0,
+      gl.RGBA,
+      gl.FLOAT,
+      null
+    );
 
-	const htk_Layer0 = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, htk_Layer0);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-	gl.texImage2D(gl.TEXTURE_2D, level, gl.RGBA32F, width, height, 0, 
-                gl.RGBA, gl.FLOAT, null);
-  
-  	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const htk_Layer0 = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, htk_Layer0);
 
-	const htk_Layer1 = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, htk_Layer1);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      level,
+      gl.RGBA32F,
+      width,
+      height,
+      0,
+      gl.RGBA,
+      gl.FLOAT,
+      null
+    );
 
-	gl.texImage2D(gl.TEXTURE_2D, level, gl.RGBA32F, width, height, 0, 
-                gl.RGBA, gl.FLOAT, null);
-  
-  	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-	const pingpong_Layer0 = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, pingpong_Layer0);
+    const htk_Layer1 = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, htk_Layer1);
 
-	gl.texImage2D(gl.TEXTURE_2D, level, gl.RGBA32F, width, height, 0, 
-                gl.RGBA, gl.FLOAT, null);
-  
-  	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      level,
+      gl.RGBA32F,
+      width,
+      height,
+      0,
+      gl.RGBA,
+      gl.FLOAT,
+      null
+    );
 
-	const pingpong_Layer1 = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, pingpong_Layer1);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-	gl.texImage2D(gl.TEXTURE_2D, level, gl.RGBA32F, width, height, 0, 
-                gl.RGBA, gl.FLOAT, null);
-  
-  	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    
+    const pingpong_Layer0 = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, pingpong_Layer0);
 
-	//------------------------------------------h0k-----------------------------------------------------
-	const h0kprogram = twgl.createProgramInfo(gl, ["vs", "h0kfs"]);
-	const htkprogram = twgl.createProgramInfo(gl, ["vs", "htkfs"]);
-	const ffthprogram = twgl.createProgramInfo(gl, ["vs", "ffthfs"]);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      level,
+      gl.RGBA32F,
+      width,
+      height,
+      0,
+      gl.RGBA,
+      gl.FLOAT,
+      null
+    );
 
-	const fb = gl.createFramebuffer();
-  	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, h0k, level);
-	
-  	gl.useProgram(h0kprogram.program);
+    const pingpong_Layer1 = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, pingpong_Layer1);
 
-	gl.viewport(0, 0, width, height);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      level,
+      gl.RGBA32F,
+      width,
+      height,
+      0,
+      gl.RGBA,
+      gl.FLOAT,
+      null
+    );
 
-  	const arrays = {
-    	position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
-     	texcoord: [0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1],
-  	};
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-  	const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
+    //images
+    var voronoi = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, voronoi);
 
-  	console.log(gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE)
-   
-  	const uniforms = {
-		fftTextureDim: 512,
-		butterflyStage: 9,
-		logOfWidth: 9,
-		pingpongStatus: 0,
-		currentLevelMipmap: 0,
-		randomDistribution: 1,
-		oceanDepth: 20,
-		L: 512,
-		spectrum: 1,
-		dispersion: 0,
-		dirSpreading: 0,
-		spectrumScale: 1,
-		choppyFactor: 1,
-		fetch: 1200000.0,
-		windDir: [1,0],
-		windSpeed: 10.0,
-		propagate: 1,
-		swell: 0.0,
-		Hs: 10.0,
-		JONSWAP_gamma: 3.3,
-		JONSWAP_sigmaB: 0.09,
-		Bretschneider_wm: 0.0,
-		Ochi_lambda1: 3.0,
-		Ochi_lambda2: 0.0,
-		Ochi_wm1: 0.0,
-		Ochi_wm2: 0.0,
-		Ochi_Hs1:  0.0,
-		Ochi_Hs2: 0.0,
-        oceanType: 1,
-		oceanTrans: [ 98.2, 95.8, 57.0],
-		oceanFloorColor: [0.956, 0.925, 0.925],
-	};
-	  
-	twgl.setUniforms(h0kprogram, uniforms);	  
-  	twgl.setBuffersAndAttributes(gl, h0kprogram, bufferInfo);
-  	twgl.drawBufferInfo(gl, bufferInfo);
+    // Fill the texture with a 1x1 blue pixel.
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      1,
+      1,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      new Uint8Array([0, 0, 255, 255])
+    );
 
-	var pixels = new Float32Array(512 * 512 * 4);
-	gl.readPixels(0, 0, 512, 512, gl.RGBA, gl.FLOAT, pixels);
-	console.log(pixels);
+    // Asynchronously load an image
+    var voronoiImage = new Image();
+    voronoiImage.src = "./resources/voronoi.jpg";
+    voronoiImage.addEventListener("load", function () {
+      // Now that the image has loaded make copy it to the texture.
+      gl.bindTexture(gl.TEXTURE_2D, voronoi);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        voronoiImage
+      );
 
-	//------------------------------------------htk-----------------------------------------------------
-	
-	
-	gl.useProgram(htkprogram.program);
+      gl.generateMipmap(gl.TEXTURE_2D);
 
-	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, htk_Layer0, level);
-	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + 1, gl.TEXTURE_2D, htk_Layer1, level);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    });
 
-	gl.drawBuffers([
-    gl.COLOR_ATTACHMENT0,
-    gl.COLOR_ATTACHMENT1,
-  ]);
+    var foam = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, foam);
 
-  console.log(gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE)
+    // Fill the texture with a 1x1 blue pixel.
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      1,
+      1,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      new Uint8Array([0, 0, 255, 255])
+    );
 
-  	const htkuniforms = {
-		width: 512,
-		oceanDepth: 20,
-		L: 512,
-		dispersion: 0,
-		timer: new Date() - startMS,
-		h0k: h0k
-	};
+    // Asynchronously load an image
+    var foamImage = new Image();
+    foamImage.src = "./resources/thick-foam-bw.jpg";
+    foamImage.addEventListener("load", function () {
+      // Now that the image has loaded make copy it to the texture.
+      gl.bindTexture(gl.TEXTURE_2D, foam);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        foamImage
+      );
 
-	twgl.setUniforms(htkprogram, htkuniforms);	  
-  	twgl.setBuffersAndAttributes(gl, htkprogram, bufferInfo);
-  	twgl.drawBufferInfo(gl, bufferInfo);
+      gl.generateMipmap(gl.TEXTURE_2D);
 
-/*
-	//------------------------------------------fft-h-----------------------------------------------------
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    });
 
-	var pingpong = 1;
-	var current_stage = -1;
-	var log_width = 9;
-	var willRender = true;
+    var sky = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, sky);
 
-	while(willRender){
-		current_stage++;
-		if(current_stage < log_width){
-			pingpong = (pingpong[1] + 1) % 2;
-			willRender = true;
-		} else{
-			willRender = false;
-		}
+    // Fill the texture with a 1x1 blue pixel.
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      1,
+      1,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      new Uint8Array([0, 0, 255, 255])
+    );
 
-		if(willRender == true){
-			if(pingpong == 0){
-				gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, pingpong_Layer0, level);
-				gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + 1, gl.TEXTURE_2D, pingpong_Layer1, level);
-				
-				const htkuniforms = {
-					pingpong: pingpong,
-					log_width: log_width,
-					stage: current_stage,
-					inTexture_Layer0: htk_Layer0,
-					inTexture_Layer1: htk_Layer1,
-				};
-			
-			}
-		}
-	}
-	*/
+    // Asynchronously load an image
+    var skyImage = new Image();
+    skyImage.src = "./resources/sky.png";
+    skyImage.addEventListener("load", function () {
+      // Now that the image has loaded make copy it to the texture.
+      gl.bindTexture(gl.TEXTURE_2D, sky);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        skyImage
+      );
 
-	//debug kinda
-	const prgInfo2 = twgl.createProgramInfo(gl, ["vs", "drawTex"]);
-  	gl.useProgram(prgInfo2.program);
+      gl.generateMipmap(gl.TEXTURE_2D);
 
-  	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    });
 
-  	twgl.resizeCanvasToDisplaySize(gl.canvas);
-  	gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-	const uniforms2={
-		tex: htk_Layer1,
-	}
+    //------------------------------camera movement controls------------------------------
+    var state={
+      dragging: false,
+      lastMouseX: -1,
+      lastMouseY: -1,
+      angleY: Math.PI / 8,
+      angleX: 0,
+      radius: 300,
+    }
 
-	function render(){
-		
-		twgl.setUniforms(prgInfo2, uniforms2);
-   		twgl.setBuffersAndAttributes(gl, prgInfo2, bufferInfo);
-   		twgl.drawBufferInfo(gl, bufferInfo);
+    gl.canvas.addEventListener('mousedown', (event) => {
+      var x = event.clientX;
+      var y = event.clientY;
+      var rect = event.target.getBoundingClientRect();
 
-		requestAnimationFrame(render);
-	}
-	requestAnimationFrame(render);
+      if(rect.left <= x && x < rect.right && rect.top <= y && y < rect.bottom){
+        state.lastMouseX = x;
+        state.lastMouseY = y;
+        state.dragging = true;
+      }
+    });
 
-	
+    gl.canvas.addEventListener('mouseup', (event) => {
+      state.dragging = false;
+    });
+
+    gl.canvas.addEventListener('mousemove', (event) => {
+      var x = event.clientX;
+      var y = event.clientY;
+      if(state.dragging){
+        var factor = 5/gl.canvas.height;
+        var dx = factor * (x - state.lastMouseX);
+        var dy = factor * (y - state.lastMouseY);
+
+        state.angleY = state.angleY + dy;
+        state.angleX = state.angleX + dx;  
+        if(state.angleY < 0) state.angleY = 0;
+        if(state.angleY > Math.PI / 2 - 0.01) state.angleY = Math.PI / 2 - 0.01;
+      }
+      state.lastMouseX = x;
+      state.lastMouseY = y;
+    });
+
+    gl.canvas.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      state.radius = state.radius + event.deltaY * 0.1;
+      if(state.radius < 1) state.radius = 1;
+    })
+
+
+    //-------------create base grid for ocean------------------
+
+    var oceanGrid = [];
+    var mapSize = 256;
+
+    for (var i = 0; i < mapSize - 1; i++) {
+      for (var j = 0; j < mapSize - 1; j++) {
+        oceanGrid.push(j - mapSize / 2);
+        oceanGrid.push(0);
+        oceanGrid.push(i - mapSize / 2);
+
+        oceanGrid.push(j - mapSize / 2);
+        oceanGrid.push(0);
+        oceanGrid.push(i + 1 - mapSize / 2);
+
+        oceanGrid.push(j + 1 - mapSize / 2);
+        oceanGrid.push(0);
+        oceanGrid.push(i - mapSize / 2);
+
+        oceanGrid.push(j + 1 - mapSize / 2);
+        oceanGrid.push(0);
+        oceanGrid.push(i - mapSize / 2);
+
+        oceanGrid.push(j - mapSize / 2);
+        oceanGrid.push(0);
+        oceanGrid.push(i + 1 - mapSize / 2);
+
+        oceanGrid.push(j + 1 - mapSize / 2);
+        oceanGrid.push(0);
+        oceanGrid.push(i + 1 - mapSize / 2);
+      }
+    }
+
+    const oceanArrays = {
+      position: oceanGrid,
+    };
+
+    const oceanBufferInfo = twgl.createBufferInfoFromArrays(gl, oceanArrays);
+
+
+    //-------------------------------create programs from shaders----------------------------------
+
+    const h0kprogram = twgl.createProgramInfo(gl, ["vs", "h0kfs"]);
+    const htkprogram = twgl.createProgramInfo(gl, ["vs", "htkfs"]);
+    const fftHprogram = twgl.createProgramInfo(gl, ["vs", "horizontal_fft"]);
+    const fftVprogram = twgl.createProgramInfo(gl, ["vs", "vertical_fft"]);
+    const oceanprogram = twgl.createProgramInfo(gl, ["ocean_vert","ocean_frag",]);
+
+    //------------------------------------------h0k-----------------------------------------------------
+
+    const fb = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      h0k,
+      level
+    );
+
+    gl.useProgram(h0kprogram.program);
+
+    gl.viewport(0, 0, width, height);
+
+    const arrays = {
+      position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
+      texcoord: [0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1],
+    };
+
+    const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
+
+    const uniforms = {
+      width: 512,
+      L: 512,
+      windDir: [1.0, 0.0],
+      windSpeed: 10.0,
+      depth: 20.0,
+      randomDistribution: 1,
+      spectrum: 1,
+      dispersionMode: 0,
+      directionalMode: 0,
+      spectrumScale: 10.0,
+      fetch: 1200000.0,
+      swell: 0.0,
+      Hs: 10.0,
+      JONSWAP_gamma: 3.3,
+      JONSWAP_sigmaA: 0.07,
+      JONSWAP_sigmaB: 0.09,
+      Bretschneider_wm: 0.0,
+      Ochi_lambda1: 3.0,
+      Ochi_lambda2: 0.0,
+      Ochi_wm1: 0.0,
+      Ochi_wm2: 0.0,
+      Ochi_Hs1: 0.0,
+      Ochi_Hs2: 0.0,
+      propagate: 1,
+    };
+
+    twgl.setUniforms(h0kprogram, uniforms);
+    twgl.setBuffersAndAttributes(gl, h0kprogram, bufferInfo);
+    twgl.drawBufferInfo(gl, bufferInfo);
+
+    console.log("1");
+    function render() {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+      //------------------------------------------htk-----------------------------------------------------
+      gl.viewport(0, 0, 512, 512);
+
+      gl.useProgram(htkprogram.program);
+
+      gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,
+        gl.COLOR_ATTACHMENT0,
+        gl.TEXTURE_2D,
+        htk_Layer0,
+        level
+      );
+      gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,
+        gl.COLOR_ATTACHMENT0 + 1,
+        gl.TEXTURE_2D,
+        htk_Layer1,
+        level
+      );
+
+      gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+
+      const htkuniforms = {
+        width: 512,
+        L: 512,
+        timer: new Date() - startMS,
+        dispersionMode: 0,
+        depth: 20.0,
+        h0k: h0k,
+      };
+
+      twgl.setUniforms(htkprogram, htkuniforms);
+      twgl.setBuffersAndAttributes(gl, htkprogram, bufferInfo);
+      twgl.drawBufferInfo(gl, bufferInfo);
+
+      //------------------------------------------fft-----------------------------------------------------
+      //layer 0
+
+      const fb2 = gl.createFramebuffer();
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fb2);
+
+      gl.useProgram(fftHprogram.program);
+      var currentProgram = fftHprogram;
+      const fftuniforms = {};
+      fftuniforms.u_transformSize = 512.0;
+
+      var iterations = 9 * 2; //maybe can't be hard coded not sure gotta check
+      for (var i = 0; i < iterations; i += 1) {
+        if (i === 0) {
+          gl.framebufferTexture2D(
+            gl.FRAMEBUFFER,
+            gl.COLOR_ATTACHMENT0,
+            gl.TEXTURE_2D,
+            pingpong_Layer0,
+            level
+          );
+          fftuniforms.u_input = h0k;
+        } else if (i === iterations - 1) {
+          gl.framebufferTexture2D(
+            gl.FRAMEBUFFER,
+            gl.COLOR_ATTACHMENT0,
+            gl.TEXTURE_2D,
+            htk_Layer0,
+            level
+          );
+          fftuniforms.u_input = pingpong_Layer0;
+        } else if (i % 2 === 1) {
+          gl.framebufferTexture2D(
+            gl.FRAMEBUFFER,
+            gl.COLOR_ATTACHMENT0,
+            gl.TEXTURE_2D,
+            htk_Layer0,
+            level
+          );
+          fftuniforms.u_input = pingpong_Layer0;
+        } else {
+          gl.framebufferTexture2D(
+            gl.FRAMEBUFFER,
+            gl.COLOR_ATTACHMENT0,
+            gl.TEXTURE_2D,
+            pingpong_Layer0,
+            level
+          );
+          fftuniforms.u_input = htk_Layer0;
+        }
+
+        if (i === iterations / 2) {
+          currentProgram = fftVprogram;
+          gl.useProgram(fftVprogram.program);
+        }
+
+        fftuniforms.u_subtransformSize = Math.pow(2,(i % (iterations / 2)) + 1);
+
+        twgl.setUniforms(currentProgram, fftuniforms);
+        twgl.setBuffersAndAttributes(gl, currentProgram, bufferInfo);
+        twgl.drawBufferInfo(gl, bufferInfo);
+      }
+
+      //layer 1
+
+      gl.useProgram(fftHprogram.program);
+      currentProgram = fftHprogram;
+
+      var iterations = 9 * 2; //maybe can't be hard coded not sure gotta check
+      for (var i = 0; i < iterations; i += 1) {
+        if (i === 0) {
+          gl.framebufferTexture2D(
+            gl.FRAMEBUFFER,
+            gl.COLOR_ATTACHMENT0,
+            gl.TEXTURE_2D,
+            pingpong_Layer1,
+            level
+          );
+          fftuniforms.u_input = h0k;
+          fftuniforms.u_transformSize = 512;
+          fftuniforms.u_subtransformSize = Math.pow(2,(i % (iterations / 2)) + 1);
+        } else if (i === iterations - 1) {
+          gl.framebufferTexture2D(
+            gl.FRAMEBUFFER,
+            gl.COLOR_ATTACHMENT0,
+            gl.TEXTURE_2D,
+            htk_Layer1,
+            level
+          );
+          fftuniforms.u_input = pingpong_Layer1;
+          fftuniforms.u_transformSize = 512;
+          fftuniforms.u_subtransformSize = Math.pow(
+            2,
+            (i % (iterations / 2)) + 1
+          );
+        } else if (i % 2 === 1) {
+          gl.framebufferTexture2D(
+            gl.FRAMEBUFFER,
+            gl.COLOR_ATTACHMENT0,
+            gl.TEXTURE_2D,
+            htk_Layer1,
+            level
+          );
+          fftuniforms.u_input = pingpong_Layer1;
+          fftuniforms.u_transformSize = 512;
+          fftuniforms.u_subtransformSize = Math.pow(
+            2,
+            (i % (iterations / 2)) + 1
+          );
+        } else {
+          gl.framebufferTexture2D(
+            gl.FRAMEBUFFER,
+            gl.COLOR_ATTACHMENT0,
+            gl.TEXTURE_2D,
+            pingpong_Layer1,
+            level
+          );
+          fftuniforms.u_input = htk_Layer1;
+          fftuniforms.u_transformSize = 512;
+          fftuniforms.u_subtransformSize = Math.pow(
+            2,
+            (i % (iterations / 2)) + 1
+          );
+        }
+
+        if (i === iterations / 2) {
+          currentProgram = fftVprogram;
+          gl.useProgram(fftVprogram.program);
+        }
+
+        twgl.setUniforms(currentProgram, fftuniforms);
+        twgl.setBuffersAndAttributes(gl, currentProgram, bufferInfo);
+        twgl.drawBufferInfo(gl, bufferInfo);
+      }
+
+      //------------------------------------Draw-----------------------------------------------
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.useProgram(oceanprogram.program);
+
+      twgl.resizeCanvasToDisplaySize(gl.canvas);
+      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+      var camPos = [150, 50, 150];
+
+      const oceanUniforms = {
+        htk_Layer0: htk_Layer0,
+        htk_Layer1: htk_Layer1,
+        voronoi: voronoi,
+        foam: foam,
+        sky: sky,
+        L: 512,
+        heightMapSize: mapSize,
+        choppyFactor: 1.0,
+        l_dir: [1.0, 1.0, 1.0, 1.0],
+        camPos: camPos,
+        sampling: 0,
+        divisions: 8,
+        divisionsLightRay: 8,
+        exposure: 1.5,
+        betaR: [3.67044e-7, 1.11688e-6, 1.80601e-6],
+        betaMf: 5.76e-7,
+        Hr: 7994,
+        Hm: 1200,
+        g: 0.98,
+        sunAngles: [0, 10],
+      };
+
+      const fov = (30 * Math.PI) / 180;
+      const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+      const zNear = 1;
+      const zFar = 1000;
+      const projection = m4.perspective(fov, aspect, zNear, zFar);
+      const eye = [state.radius * Math.cos(state.angleX) * Math.sin(Math.PI / 2 - state.angleY), state.radius * Math.cos(Math.PI / 2 - state.angleY), state.radius * Math.sin(state.angleX) * Math.sin(Math.PI / 2 - state.angleY)];
+      const target = [0, 0, 0];
+      const up = [0, 1, 0];
+
+      const camera = m4.lookAt(eye, target, up);
+      const view = m4.inverse(camera);
+      const viewProjection = m4.multiply(projection, view);
+      const world = m4.identity();
+
+      oceanUniforms.m_view = camera;
+      oceanUniforms.m_normal = m4.transpose(m4.inverse(world));
+      oceanUniforms.m_pvm = m4.multiply(viewProjection, world);
+
+      twgl.setUniforms(oceanprogram, oceanUniforms);
+      twgl.setBuffersAndAttributes(gl, oceanprogram, oceanBufferInfo);
+      twgl.drawBufferInfo(gl, oceanBufferInfo);
+
+      requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
   </script>
 </html>
-
-

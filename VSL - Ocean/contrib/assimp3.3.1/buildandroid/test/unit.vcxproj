@@ -1,0 +1,378 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|ARM">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|ARM">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{2911689C-34E2-41F1-8214-34207893C16A}</ProjectGUID>
+    <WindowsSDKDesktopARMSupport>true</WindowsSDKDesktopARMSupport>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>ARM</Platform>
+    <ProjectName>unit</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+    <PropertyGroup>
+      <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\Debug\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">unit.dir\Debug\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">unit</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">.exe</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</GenerateManifest>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\Release\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">unit.dir\Release\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">unit</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">.exe</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</GenerateManifest>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\MinSizeRel\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">unit.dir\MinSizeRel\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">unit</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">.exe</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">false</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">true</GenerateManifest>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\RelWithDebInfo\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">unit.dir\RelWithDebInfo\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">unit</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">.exe</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">true</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">true</GenerateManifest>
+    </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\googletest\include;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\gtest\include;D:\Box Sync\SDK\assimp3.3.1\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Debug/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_TEST_MODELS_DIR="D:/Box Sync/SDK/assimp3.3.1/test/models";CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_TEST_MODELS_DIR=\"D:/Box Sync/SDK/assimp3.3.1/test/models\";CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\googletest\include;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\gtest\include;D:\Box Sync\SDK\assimp3.3.1\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\googletest\include;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\gtest\include;D:\Box Sync\SDK\assimp3.3.1\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalOptions> /machine:ARM /debug %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;..\code\Debug\assimp-vc140-mt.lib;gtest.lib;..\contrib\zlib\Debug\zlibstaticd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest;D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/$(Configuration);D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/ReleaseLibs;D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/ReleaseLibs/$(Configuration);D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/DebugLibs;D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/DebugLibs/$(Configuration);D:/Box Sync/SDK/assimp3.3.1/buildandroid;D:/Box Sync/SDK/assimp3.3.1/buildandroid/$(Configuration);/lib;/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/Debug/unit.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/Debug/unit.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\googletest\include;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\gtest\include;D:\Box Sync\SDK\assimp3.3.1\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Release/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_TEST_MODELS_DIR="D:/Box Sync/SDK/assimp3.3.1/test/models";CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat></DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_TEST_MODELS_DIR=\"D:/Box Sync/SDK/assimp3.3.1/test/models\";CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\googletest\include;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\gtest\include;D:\Box Sync\SDK\assimp3.3.1\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\googletest\include;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\gtest\include;D:\Box Sync\SDK\assimp3.3.1\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalOptions> /machine:ARM %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;..\code\Release\assimp-vc140-mt.lib;gtest.lib;..\contrib\zlib\Release\zlibstatic.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest;D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/$(Configuration);D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/ReleaseLibs;D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/ReleaseLibs/$(Configuration);D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/DebugLibs;D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/DebugLibs/$(Configuration);D:/Box Sync/SDK/assimp3.3.1/buildandroid;D:/Box Sync/SDK/assimp3.3.1/buildandroid/$(Configuration);/lib;/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/Release/unit.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/Release/unit.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\googletest\include;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\gtest\include;D:\Box Sync\SDK\assimp3.3.1\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>MinSizeRel/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_TEST_MODELS_DIR="D:/Box Sync/SDK/assimp3.3.1/test/models";CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat></DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_TEST_MODELS_DIR=\"D:/Box Sync/SDK/assimp3.3.1/test/models\";CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\googletest\include;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\gtest\include;D:\Box Sync\SDK\assimp3.3.1\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\googletest\include;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\gtest\include;D:\Box Sync\SDK\assimp3.3.1\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalOptions> /machine:ARM %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;..\code\MinSizeRel\assimp-vc140-mt.lib;gtest.lib;..\contrib\zlib\MinSizeRel\zlibstatic.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest;D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/$(Configuration);D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/ReleaseLibs;D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/ReleaseLibs/$(Configuration);D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/DebugLibs;D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/DebugLibs/$(Configuration);D:/Box Sync/SDK/assimp3.3.1/buildandroid;D:/Box Sync/SDK/assimp3.3.1/buildandroid/$(Configuration);/lib;/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/MinSizeRel/unit.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/MinSizeRel/unit.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\googletest\include;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\gtest\include;D:\Box Sync\SDK\assimp3.3.1\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_TEST_MODELS_DIR="D:/Box Sync/SDK/assimp3.3.1/test/models";CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_TEST_MODELS_DIR=\"D:/Box Sync/SDK/assimp3.3.1/test/models\";CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\googletest\include;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\gtest\include;D:\Box Sync\SDK\assimp3.3.1\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\googletest\include;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\src\gtest\gtest\include;D:\Box Sync\SDK\assimp3.3.1\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalOptions> /machine:ARM /debug %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;..\code\RelWithDebInfo\assimp-vc140-mt.lib;gtest.lib;..\contrib\zlib\RelWithDebInfo\zlibstatic.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest;D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/$(Configuration);D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/ReleaseLibs;D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/ReleaseLibs/$(Configuration);D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/DebugLibs;D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/src/gtest-build/googlemock/gtest/DebugLibs/$(Configuration);D:/Box Sync/SDK/assimp3.3.1/buildandroid;D:/Box Sync/SDK/assimp3.3.1/buildandroid/$(Configuration);/lib;/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/RelWithDebInfo/unit.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/RelWithDebInfo/unit.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\Box Sync\SDK\assimp3.3.1\test\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Building Custom Rule D:/Box Sync/SDK/assimp3.3.1/test/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" "-HD:/Box Sync/SDK/assimp3.3.1" "-BD:/Box Sync/SDK/assimp3.3.1/buildandroid" --check-stamp-file "D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\CMakeFiles\generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">D:/Box Sync/SDK/assimp3.3.1/test/CMakeLists.txt;D:\Box Sync\SDK\assimp3.3.1\test\CMakeLists.txt;D:\Box Sync\SDK\assimp3.3.1\cmake-modules\AddGTest.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindThreads.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFiles.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckLibraryExists.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckSymbolExists.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeConfigurableFile.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\ExternalProject.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindGit.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindGit.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\RepositoryInfo.txt.in;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\tmp\gtest-cfgcmd.txt.in;D:\Box Sync\SDK\assimp3.3.1\test\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Building Custom Rule D:/Box Sync/SDK/assimp3.3.1/test/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" "-HD:/Box Sync/SDK/assimp3.3.1" "-BD:/Box Sync/SDK/assimp3.3.1/buildandroid" --check-stamp-file "D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\CMakeFiles\generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">D:/Box Sync/SDK/assimp3.3.1/test/CMakeLists.txt;D:\Box Sync\SDK\assimp3.3.1\test\CMakeLists.txt;D:\Box Sync\SDK\assimp3.3.1\cmake-modules\AddGTest.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindThreads.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFiles.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckLibraryExists.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckSymbolExists.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeConfigurableFile.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\ExternalProject.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindGit.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindGit.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\RepositoryInfo.txt.in;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\tmp\gtest-cfgcmd.txt.in;D:\Box Sync\SDK\assimp3.3.1\test\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">Building Custom Rule D:/Box Sync/SDK/assimp3.3.1/test/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" "-HD:/Box Sync/SDK/assimp3.3.1" "-BD:/Box Sync/SDK/assimp3.3.1/buildandroid" --check-stamp-file "D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\CMakeFiles\generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">D:/Box Sync/SDK/assimp3.3.1/test/CMakeLists.txt;D:\Box Sync\SDK\assimp3.3.1\test\CMakeLists.txt;D:\Box Sync\SDK\assimp3.3.1\cmake-modules\AddGTest.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindThreads.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFiles.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckLibraryExists.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckSymbolExists.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeConfigurableFile.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\ExternalProject.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindGit.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindGit.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\RepositoryInfo.txt.in;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\tmp\gtest-cfgcmd.txt.in;D:\Box Sync\SDK\assimp3.3.1\test\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">Building Custom Rule D:/Box Sync/SDK/assimp3.3.1/test/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" "-HD:/Box Sync/SDK/assimp3.3.1" "-BD:/Box Sync/SDK/assimp3.3.1/buildandroid" --check-stamp-file "D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\CMakeFiles\generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">D:/Box Sync/SDK/assimp3.3.1/test/CMakeLists.txt;D:\Box Sync\SDK\assimp3.3.1\test\CMakeLists.txt;D:\Box Sync\SDK\assimp3.3.1\cmake-modules\AddGTest.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindThreads.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFiles.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckLibraryExists.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckSymbolExists.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeConfigurableFile.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\ExternalProject.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindGit.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindGit.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\RepositoryInfo.txt.in;D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\gtest\tmp\gtest-cfgcmd.txt.in;D:\Box Sync\SDK\assimp3.3.1\test\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\CCompilerTest.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\Main.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\code\Version.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\AssimpAPITest.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utBlendImportAreaLight.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utBlendImportMaterials.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utColladaExportCamera.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utColladaExportLight.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utFastAtof.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utFindDegenerates.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utFindInvalidData.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utFixInfacingNormals.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utGenNormals.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utImporter.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utImproveCacheLocality.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utIOSystem.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utIssues.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utJoinVertices.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utLimitBoneWeights.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utMaterialSystem.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utMatrix3x3.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utMatrix4x4.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utPretransformVertices.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utRemoveComments.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utRemoveComponent.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utRemoveRedundantMaterials.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utScenePreprocessor.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utSharedPPData.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utStringUtils.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utSortByPType.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utSplitLargeMeshes.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utTargetAnimation.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utTextureTransform.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utTriangulate.cpp"  />
+    <ClCompile Include="D:\Box Sync\SDK\assimp3.3.1\test\unit\utVertexTriangleAdjacency.cpp"  />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="D:/Box Sync/SDK/assimp3.3.1/buildandroid/ZERO_CHECK.vcxproj">
+      <Project>835B31CB-A620-4C26-A986-1356CF114AA3</Project>
+    </ProjectReference>
+    <ProjectReference Include="D:/Box Sync/SDK/assimp3.3.1/buildandroid/code/assimp.vcxproj">
+      <Project>98A424EB-CB5B-444B-A124-6EFE902F11B2</Project>
+    </ProjectReference>
+    <ProjectReference Include="D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest.vcxproj">
+      <Project>366418B9-F34F-4E59-BA36-68CB71BCF7D4</Project>
+    </ProjectReference>
+    <ProjectReference Include="D:/Box Sync/SDK/assimp3.3.1/buildandroid/contrib/zlib/zlibstatic.vcxproj">
+      <Project>044E089D-8C64-4346-86E3-40A09C73102D</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,173 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|ARM">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|ARM">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{1D54D878-F089-4611-8A03-26D32D8B8CE0}</ProjectGUID>
+    <WindowsSDKDesktopARMSupport>true</WindowsSDKDesktopARMSupport>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>ARM</Platform>
+    <ProjectName>ALL_BUILD</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+    <PropertyGroup>
+      <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Box Sync\SDK\assimp3.3.1\.;D:\Box Sync\SDK\assimp3.3.1\buildandroid;D:\Box Sync\SDK\assimp3.3.1\include;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib;D:\Box Sync\SDK\assimp3.3.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Building Custom Rule D:/Box Sync/SDK/assimp3.3.1/contrib/zlib/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" "-HD:/Box Sync/SDK/assimp3.3.1" "-BD:/Box Sync/SDK/assimp3.3.1/buildandroid" --check-stamp-file "D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib\CMakeFiles\generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">D:/Box Sync/SDK/assimp3.3.1/contrib/zlib/CMakeLists.txt;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\CMakeLists.txt;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckTypeSize.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFileCXX.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckFunctionExists.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckCSourceCompiles.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckTypeSize.c.in;D:\Box Sync\SDK\assimp3.3.1\buildandroid\CMakeFiles\CheckTypeSize\OFF64_T.c;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckFunctionExists.c;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\zlib.pc.cmakein;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\zconf.h.cmakein;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Building Custom Rule D:/Box Sync/SDK/assimp3.3.1/contrib/zlib/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" "-HD:/Box Sync/SDK/assimp3.3.1" "-BD:/Box Sync/SDK/assimp3.3.1/buildandroid" --check-stamp-file "D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib\CMakeFiles\generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">D:/Box Sync/SDK/assimp3.3.1/contrib/zlib/CMakeLists.txt;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\CMakeLists.txt;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckTypeSize.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFileCXX.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckFunctionExists.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckCSourceCompiles.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckTypeSize.c.in;D:\Box Sync\SDK\assimp3.3.1\buildandroid\CMakeFiles\CheckTypeSize\OFF64_T.c;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckFunctionExists.c;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\zlib.pc.cmakein;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\zconf.h.cmakein;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">Building Custom Rule D:/Box Sync/SDK/assimp3.3.1/contrib/zlib/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" "-HD:/Box Sync/SDK/assimp3.3.1" "-BD:/Box Sync/SDK/assimp3.3.1/buildandroid" --check-stamp-file "D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib\CMakeFiles\generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">D:/Box Sync/SDK/assimp3.3.1/contrib/zlib/CMakeLists.txt;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\CMakeLists.txt;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckTypeSize.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFileCXX.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckFunctionExists.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckCSourceCompiles.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckTypeSize.c.in;D:\Box Sync\SDK\assimp3.3.1\buildandroid\CMakeFiles\CheckTypeSize\OFF64_T.c;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckFunctionExists.c;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\zlib.pc.cmakein;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\zconf.h.cmakein;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|ARM'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">Building Custom Rule D:/Box Sync/SDK/assimp3.3.1/contrib/zlib/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" "-HD:/Box Sync/SDK/assimp3.3.1" "-BD:/Box Sync/SDK/assimp3.3.1/buildandroid" --check-stamp-file "D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib\CMakeFiles\generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">D:/Box Sync/SDK/assimp3.3.1/contrib/zlib/CMakeLists.txt;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\CMakeLists.txt;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckTypeSize.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFileCXX.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckFunctionExists.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckCSourceCompiles.cmake;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckTypeSize.c.in;D:\Box Sync\SDK\assimp3.3.1\buildandroid\CMakeFiles\CheckTypeSize\OFF64_T.c;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckFunctionExists.c;C:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CheckIncludeFile.c.in;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\zlib.pc.cmakein;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\zconf.h.cmakein;D:\Box Sync\SDK\assimp3.3.1\contrib\zlib\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">D:\Box Sync\SDK\assimp3.3.1\buildandroid\contrib\zlib\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="D:/Box Sync/SDK/assimp3.3.1/buildandroid/contrib/zlib/zlibstatic.vcxproj">
+      <Project>044E089D-8C64-4346-86E3-40A09C73102D</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

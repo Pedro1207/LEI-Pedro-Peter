@@ -1,0 +1,2 @@
+C:\MinGW\bin\ar.exe qc libvsl.a CMakeFiles/vsl.dir/source/vsFontLib.cpp.obj CMakeFiles/vsl.dir/source/vsGLInfoLib.cpp.obj CMakeFiles/vsl.dir/source/vsGeometryLib.cpp.obj CMakeFiles/vsl.dir/source/vsLogLib.cpp.obj CMakeFiles/vsl.dir/source/vsMathLib.cpp.obj CMakeFiles/vsl.dir/source/vsModelLib.cpp.obj CMakeFiles/vsl.dir/source/vsProfileLib.cpp.obj CMakeFiles/vsl.dir/source/vsResourceLib.cpp.obj CMakeFiles/vsl.dir/source/vsShaderLib.cpp.obj CMakeFiles/vsl.dir/source/vsSurfRevLib.cpp.obj
+C:\MinGW\bin\ranlib.exe libvsl.a

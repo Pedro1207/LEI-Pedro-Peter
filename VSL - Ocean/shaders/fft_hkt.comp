@@ -1,0 +1,92 @@
+
+layout (local_size_x = 8, local_size_y = 8) in;
+
+layout (binding = 0, rgba32f) writeonly uniform image2DArray tilde_hkt; 
+
+uniform sampler2D tilde_h0k;
+
+uniform int width;
+uniform int L;
+uniform float timer;
+uniform int dispersionMode;
+uniform float depth;
+
+
+
+vec2 mult(vec2 v0, vec2 v1) {
+	return vec2(v0.x * v1.x - v0.y * v1.y,
+				v0.x * v1.y + v0.y * v1.x);
+}
+
+
+vec2 conj(vec2 v){
+	return vec2(v.x, -v.y);
+}
+
+void main(void) {
+
+	float t = (timer+1e7) / 1000;
+	//float t = timer/1000;
+	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+	float whalf = width / 2.0;
+
+	vec2 k = vec2(pos.x - whalf, pos.y  - whalf) * 2 * M_PI/L;
+	
+	float magnitude = length(k);
+	if (magnitude < 0.00000000001) magnitude = 0.00000000001;
+	
+	float w = getDispersionW(magnitude, depth, dispersionMode);
+	
+	vec4 spectrum = texelFetch(tilde_h0k, ivec2(gl_GlobalInvocationID.xy),0);
+	vec2 fourier_amp = spectrum.xy;
+	vec2 fourier_amp_conj = spectrum.zw;
+	
+	float cosinus = cos(w*t);
+	float sinus   = sin(w*t);
+		
+	vec2 exp_iwt = vec2(cosinus, sinus);
+	vec2 exp_iwt_inv = vec2(cosinus, -sinus);
+
+	// dy
+	vec2 h_k_t_dy = mult(fourier_amp, exp_iwt) + mult(fourier_amp_conj, exp_iwt_inv);
+
+	// dx
+	vec2 dx = vec2(0.0, -k.x/magnitude);
+	vec2 h_k_t_dx = mult(dx, h_k_t_dy);
+	
+	// dz
+	vec2 dz = vec2(0.0, -k.y/magnitude);
+	vec2 h_k_t_dz = mult(dz, h_k_t_dy);
+	
+	// sx
+	dx = vec2(0.0, k.x);
+	vec2 sx = mult(dx, h_k_t_dy);
+
+	// sz
+	dz = vec2(0.0, k.y);
+	vec2 sz = mult(dz, h_k_t_dy);
+	
+#if (FOAM == USE_VERTICAL_ACCELERATION)
+
+	vec2 a0k = fourier_amp * w * w;
+	vec2 a0minusk = fourier_amp_conj * w * w;
+	vec2 a = mult(a0k, exp_iwt) + mult(a0minusk, exp_iwt_inv);
+	
+#elif (FOAM == USE_JACOBIAN)
+
+	vec2 daux = vec2(0.0, -k.x);
+	vec2 jxx = mult(daux, h_k_t_dx);
+	vec2 a = mult(daux, h_k_t_dz);
+	daux = vec2(0.0, -k.y);
+	vec2 jyy = mult(daux, h_k_t_dz);
+	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_JXXYY), vec4(jxx, jyy));
+	
+#else
+	vec2 a = vec2(0);
+#endif
+	
+	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DY), vec4(h_k_t_dy, a));
+	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DXZ), vec4(h_k_t_dx, h_k_t_dz));
+	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_SXZ), vec4(sx, sz));
+	
+}

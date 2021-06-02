@@ -1,0 +1,22 @@
+# CMake generation dependency list for this directory.
+D:/Box Sync/SDK/assimp3.3.1/test/CMakeLists.txt
+D:/Box Sync/SDK/assimp3.3.1/cmake-modules/AddGTest.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/FindThreads.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/CheckIncludeFiles.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/CheckLibraryExists.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/CheckSymbolExists.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/CMakeConfigurableFile.in
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/FindPackageMessage.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/CMakeParseArguments.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/ExternalProject.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/FindGit.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/FindPackageMessage.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/CMakeParseArguments.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/FindGit.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/FindPackageMessage.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/CMakeParseArguments.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/RepositoryInfo.txt.in
+D:/Box Sync/SDK/assimp3.3.1/buildandroid/test/gtest/tmp/gtest-cfgcmd.txt.in

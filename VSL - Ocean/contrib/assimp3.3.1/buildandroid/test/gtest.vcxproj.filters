@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Box Sync\SDK\assimp3.3.1\test\CMakeLists.txt" />
+    <CustomBuild Include="D:\Box Sync\SDK\assimp3.3.1\buildandroid\CMakeFiles\90a89aa0618b5ddb590da02b21f4f6bc\gtest-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Box Sync\SDK\assimp3.3.1\buildandroid\CMakeFiles\90a89aa0618b5ddb590da02b21f4f6bc\gtest-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Box Sync\SDK\assimp3.3.1\buildandroid\CMakeFiles\90a89aa0618b5ddb590da02b21f4f6bc\gtest-update.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Box Sync\SDK\assimp3.3.1\buildandroid\CMakeFiles\90a89aa0618b5ddb590da02b21f4f6bc\gtest-patch.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Box Sync\SDK\assimp3.3.1\buildandroid\CMakeFiles\90a89aa0618b5ddb590da02b21f4f6bc\gtest-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Box Sync\SDK\assimp3.3.1\buildandroid\CMakeFiles\90a89aa0618b5ddb590da02b21f4f6bc\gtest-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Box Sync\SDK\assimp3.3.1\buildandroid\CMakeFiles\90a89aa0618b5ddb590da02b21f4f6bc\gtest-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Box Sync\SDK\assimp3.3.1\buildandroid\CMakeFiles\57c494fd64e2ea445b80983b4fa13a7d\gtest-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Box Sync\SDK\assimp3.3.1\buildandroid\CMakeFiles\00f12f1f983a3da040a228066a20b8c0\gtest.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="D:\Box Sync\SDK\assimp3.3.1\buildandroid\test\CMakeFiles\gtest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{FE189D5A-F082-47FC-B8EA-35FEDB22E420}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

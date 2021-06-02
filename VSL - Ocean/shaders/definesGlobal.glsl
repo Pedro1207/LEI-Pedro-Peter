@@ -1,0 +1,18 @@
+#define TEXTURE_GRADS
+
+//#define USE_NOISE
+
+#define COMPUTE_SKY_FOR_REFLECTION
+
+// foam
+#define NO_FOAM 0
+#define USE_JACOBIAN 1
+#define USE_VERTICAL_ACCELERATION 2
+#define FOAM NO_FOAM
+
+//#define TESTING_COLOR_DEPTHS
+//#define TESTING_COLORS	
+
+
+#define M_PI 3.1415926535897932384626433832795
+#define G 9.81

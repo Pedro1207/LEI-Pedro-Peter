@@ -1,0 +1,165 @@
+
+
+layout (local_size_x = 4, local_size_y = 8) in;
+
+// ping pong textures
+layout (binding = 0, rgba32f) uniform image2DArray pingpong0;
+layout (binding = 1, rgba32f) uniform image2DArray pingpong1;
+
+uniform int pingpong;
+uniform int log_width;
+uniform int stage;
+
+
+vec2 complexMult(vec2 v0, vec2 v1) {
+	return vec2(v0.x * v1.x - v0.y * v1.y,
+				v0.x * v1.y + v0.y * v1.x);
+}
+
+vec4 complexMultTwice(vec2 v0, vec4 v1) {
+	return vec4(v0.x * v1.x - v0.y * v1.y,
+				v0.x * v1.y + v0.y * v1.x,
+				v0.x * v1.z - v0.y * v1.w,
+				v0.x * v1.w + v0.y * v1.z);
+}
+
+int bitReverse(int k) {
+
+	uint x = uint(k);
+	uint n = 0;
+	uint mask = 0x1;
+	for (int i = 0; i < log_width; i++) {
+		n <<= 1;
+		n |= (x & 1);
+		x >>= 1;
+	}
+	return int(n);
+}
+
+
+vec2 w(int k, int nn) {
+
+	float it =  2 * k * M_PI / nn;
+	return vec2(cos(it), sin(it));
+}
+
+
+void main() {
+
+	uint line = gl_GlobalInvocationID.x;
+	uint column = gl_GlobalInvocationID.y;
+	
+	int iter = int(pow(2,log_width));
+	
+	int groups = iter / int(pow(2, stage));
+	int groupSize = 2 * iter / groups;
+	int k = int(line) % (groupSize /2);
+	int group = int(line) / (groupSize /2);
+	int groupShift = int(pow(2, stage + 1));
+
+	int index = k + group * groupShift;
+	int shift = int(pow(2, stage));
+
+	vec2 ww;
+	
+	vec4 elemk, elemks;
+	vec4 elems4, elemss4, elemxz, elemxzs, elemj, elemjs; 
+	
+	int br = bitReverse(index);
+	int brs = bitReverse(index + shift);
+	
+	// alternate between textures
+	if (pingpong == 0) {
+		if (stage == 0) {
+		// when stage = 0 use bit reverse indices
+			elemk = imageLoad(pingpong0, ivec3(br, column, LAYER_DY));
+			elemks = imageLoad(pingpong0, ivec3(brs, column, LAYER_DY));
+			elemxz = imageLoad(pingpong0, ivec3(br, column, LAYER_DXZ));
+			elemxzs = imageLoad(pingpong0, ivec3(brs, column, LAYER_DXZ));
+			elems4 = imageLoad(pingpong0, ivec3(br, column, LAYER_SXZ));
+			elemss4 = imageLoad(pingpong0, ivec3(brs, column, LAYER_SXZ));
+#if (FOAM == USE_JACOBIAN)		
+			elemj = imageLoad(pingpong0, ivec3(br, column, LAYER_JXXYY));
+			elemjs = imageLoad(pingpong0, ivec3(brs, column, LAYER_JXXYY));
+#endif
+		}
+		else {
+			elemk = imageLoad(pingpong0, ivec3(index, column, LAYER_DY));
+			elemks = imageLoad(pingpong0, ivec3(index + shift, column, LAYER_DY));
+			elemxz = imageLoad(pingpong0, ivec3(index, column, LAYER_DXZ));
+			elemxzs = imageLoad(pingpong0, ivec3(index + shift, column, LAYER_DXZ));
+			elems4 = imageLoad(pingpong0, ivec3(index, column, LAYER_SXZ));
+			elemss4 = imageLoad(pingpong0, ivec3(index + shift, column, LAYER_SXZ));
+#if (FOAM == USE_JACOBIAN)		
+			elemj = imageLoad(pingpong0, ivec3(index, column, LAYER_JXXYY));
+			elemjs = imageLoad(pingpong0, ivec3(index + shift, column, LAYER_JXXYY));
+#endif
+		}
+		// compute the twiddle factor
+		ww = w(k, groupShift);
+			
+		// write the outputs
+		vec4 cm = complexMultTwice(ww, elemks);
+		imageStore(pingpong1, ivec3(index, column, LAYER_DY), elemk + cm);
+		imageStore(pingpong1, ivec3(index + shift, column, LAYER_DY), elemk - cm);
+
+		cm = complexMultTwice(ww,elemxzs);
+		imageStore(pingpong1, ivec3(index, column, LAYER_DXZ), elemxz + cm);
+		imageStore(pingpong1, ivec3(index + shift, column, LAYER_DXZ), elemxz - cm);
+
+		cm = complexMultTwice(ww, elemss4);
+		imageStore(pingpong1, ivec3(index, column, LAYER_SXZ), elems4 + cm);
+		imageStore(pingpong1, ivec3(index + shift, column, LAYER_SXZ), elems4 - cm);
+#if (FOAM == USE_JACOBIAN)		
+		cm = complexMultTwice(ww, elemjs);
+		imageStore(pingpong1, ivec3(index, column, LAYER_JXXYY), elemj + cm);
+		imageStore(pingpong1, ivec3(index + shift, column, LAYER_JXXYY), elemj - cm);
+#endif		
+		}
+	else {
+		if (stage == 0) {
+			elemk = imageLoad(pingpong1, ivec3(br, column, LAYER_DY));
+			elemks = imageLoad(pingpong1, ivec3(brs, column, LAYER_DY));
+			elemxz = imageLoad(pingpong1, ivec3(br, column, LAYER_DXZ));
+			elemxzs = imageLoad(pingpong1, ivec3(brs, column, LAYER_DXZ));
+			elems4 = imageLoad(pingpong1, ivec3(br, column, LAYER_SXZ));
+			elemss4 = imageLoad(pingpong1, ivec3(brs, column, LAYER_SXZ));
+#if (FOAM == USE_JACOBIAN)		
+			elemj = imageLoad(pingpong1, ivec3(br, column, LAYER_JXXYY));
+			elemjs = imageLoad(pingpong1, ivec3(brs, column, LAYER_JXXYY));
+#endif
+		}
+		else {	
+			elemk = imageLoad(pingpong1, ivec3(index, column, LAYER_DY));
+			elemks = imageLoad(pingpong1, ivec3(index + shift, column, LAYER_DY));
+			elemxz = imageLoad(pingpong1, ivec3(index, column, LAYER_DXZ));
+			elemxzs = imageLoad(pingpong1, ivec3(index + shift, column, LAYER_DXZ));
+			elems4 = imageLoad(pingpong1, ivec3(index, column, LAYER_SXZ));
+			elemss4 = imageLoad(pingpong1, ivec3(index + shift, column, LAYER_SXZ));
+#if (FOAM == USE_JACOBIAN)		
+			elemj = imageLoad(pingpong1, ivec3(index, column, LAYER_JXXYY));
+			elemjs = imageLoad(pingpong1, ivec3(index + shift, column, LAYER_JXXYY));
+#endif
+		}
+		ww = w(k, groupShift);
+			
+		vec4 cm = complexMultTwice(ww, elemks);
+		imageStore(pingpong0, ivec3(index, column, LAYER_DY), elemk + cm);
+		imageStore(pingpong0, ivec3(index + shift, column, LAYER_DY), elemk - cm);
+
+		cm = complexMultTwice(ww, elemxzs);
+		imageStore(pingpong0, ivec3(index, column, LAYER_DXZ), elemxz + cm);
+		imageStore(pingpong0, ivec3(index + shift, column, LAYER_DXZ), elemxz - cm);
+
+		cm = complexMultTwice(ww, elemss4);
+		imageStore(pingpong0, ivec3(index, column, LAYER_SXZ), elems4 + cm);
+		imageStore(pingpong0, ivec3(index + shift, column, LAYER_SXZ), elems4 - cm);		
+#if (FOAM == USE_JACOBIAN)		
+		cm = complexMultTwice(ww, elemjs);
+		imageStore(pingpong0, ivec3(index, column, LAYER_JXXYY), elemj + cm);
+		imageStore(pingpong0, ivec3(index + shift, column, LAYER_JXXYY), elemj - cm);
+#endif		
+	}
+
+}
+
