@@ -117,6 +117,7 @@ float getDispersionDerivative(float k, float depth, int dispersionMode) {
 in vec2 texCoordV;
 
 layout (binding = 0, rgba32f) writeonly uniform image2DArray tilde_hkt; 
+layout (binding = 1, rgba32f) writeonly uniform image2DArray test;
 
 uniform sampler2D tilde_h0k;
 
@@ -220,6 +221,7 @@ void main(void) {
 	vec2 sxz = sx + vec2(-sz.y, sz.x);
 	imageStore(tilde_hkt, ivec3(texCoordV * 512, LAYER_Y_JXY_JXX_JYY), vec4(dy, b));
 	imageStore(tilde_hkt, ivec3(texCoordV * 512, LAYER_DX_DZ_SX_SZ), vec4(dxz,sxz));
+	imageStore(test, ivec3(texCoordV * 512, LAYER_Y_JXY_JXX_JYY), vec4(dy, b));
     discard;
 //	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DXZ), vec4(h_k_t_dx, h_k_t_dz));
 //	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_SXZ), vec4(sx, sz));

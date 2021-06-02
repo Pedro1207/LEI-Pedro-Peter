@@ -699,7 +699,7 @@ void main(void) {
 	// reset max and min depth;
 	info[0] = vec4(0);
 	
-	ivec2 pos = ivec2(texCoordV * 512);
+	ivec2 pos = ivec2(texCoordV * width);
 	
 	int kx = pos.x >= width/2 ? pos.x - width: pos.x;
 	int kz = pos.y >= width/2 ? pos.y - width: pos.y;
@@ -715,7 +715,7 @@ void main(void) {
 	float z1, z2;
 
 	// clamp to prevent values equal to zero
-	vec4 z = clamp(texelFetch(texRnd, ivec2(texCoordV * 512), 0), 0.000001, 1.0) ;
+	vec4 z = clamp(texelFetch(texRnd, ivec2(texCoordV * width), 0), 0.000001, 1.0);
 	z1 = z.x-0.5;
 	z2 = z.y-0.5;
 

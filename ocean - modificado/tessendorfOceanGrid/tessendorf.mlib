@@ -26,6 +26,13 @@
 		<texture name="foam" filename="../common/textures/thick-foam-bw.jpg" mipmap="1" />
 		<texture name="sky" filename="../common/textures/sky.png" mipmap="0" />
 
+
+		<texture name ="test" >
+			<WIDTH value="SSIZE" />
+			<HEIGHT value="SSIZE" />
+			<INTERNAL_FORMAT value="RGBA32F" />
+		</texture>
+
 		<texture name ="h0k" >
 			<WIDTH value="SSIZE" />
 			<HEIGHT value="SSIZE" />
@@ -258,7 +265,7 @@
 			</shader>
 
 			<textures>
-				<texture UNIT=0 name="random" />
+				<texture UNIT=0 name="noise1" />
 			</textures>
 			<imageTextures>
 				<imageTexture UNIT=0 texture="h0k" >
@@ -277,6 +284,10 @@
 		<material name="fft_hkt">
 			<shader name="hkt">
 				<values>
+					<valueof uniform="test"
+							 type="IMAGE_TEXTURE" context="CURRENT"
+							 id=1 component="UNIT" />
+
 					<valueof uniform="tilde_hkt"
 							 type="IMAGE_TEXTURE" context="CURRENT"
 							 id=0 component="UNIT" />
@@ -310,6 +321,10 @@
 
 			<imageTextures>
 				<imageTexture UNIT=0 texture="hkt" >
+					<ACCESS value="WRITE_ONLY" />
+					<LEVEL value=0 />
+				</imageTexture>
+				<imageTexture UNIT=1 texture="test" >
 					<ACCESS value="WRITE_ONLY" />
 					<LEVEL value=0 />
 				</imageTexture>

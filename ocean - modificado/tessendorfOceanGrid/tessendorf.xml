@@ -9,7 +9,7 @@
 			
 			<constant name="SSIZE" value=512 /> 
 			<constant name="L2SIZE" value=9 /> 
-			<constant name="L2SIZE_PLUS1" value=10 /> 
+			<constant name="L2SIZE_PLUS1" value=3 /> 
 			<constant name="D8SIZE" value=64 />
 		</constants>
 		

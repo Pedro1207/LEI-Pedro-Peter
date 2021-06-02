@@ -1,1 +1,0 @@
- ../VSL/libvsl.a ../contrib/tinyxml/libtinyxml.a ../contrib/freeglut-3.0.0/lib/libfreeglut_static.a ../contrib/glew/libglew.a -lopengl32 -lglu32 ../../contrib/devil/lib32/DevIL.lib ../../contrib/fftw/lib32/libfftw3f-3.lib -lwinmm -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

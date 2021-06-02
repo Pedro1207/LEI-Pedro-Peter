@@ -371,6 +371,10 @@ vec3 intersect(vec3 origin, vec3 direction, vec3 planeNormal, float D) {
 
 void main() {
 	
+	int i;
+	while(1){
+		i++;
+	}
 	vec2 slope = texture(htk, vec3(DataIn.texCoord, LAYER_DX_DZ_SX_SZ)).zw;
 	vec3 wn = normalize(vec3( -slope.x,  1,  -slope.y));//
 	
