@@ -26,6 +26,7 @@
   <body>
     <canvas id="c"></canvas>
   </body>
+
   <script id="vs" type="notjs">
     #version 300 es
 
@@ -1589,675 +1590,482 @@
   <script type="module">
     import * as twgl from "./twgl-full.module.js";
     const gl = document.querySelector("#c").getContext("webgl2");
+
     gl.getExtension("EXT_color_buffer_float");
     gl.getExtension("EXT_float_blend");
     gl.getExtension("OES_texture_float_linear");
     const m4 = twgl.m4;
 
+    //constants
     const startMS = new Date();
-
-    gl.enable(gl.DEPTH_TEST);
-
-    //------------------------------------------create textures-----------------------------------------------------
-
     const width = 512;
     const height = 512;
     const level = 0;
+    const mapSize = 512;
 
-    const h0k = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, h0k);
 
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      level,
-      gl.RGBA32F,
-      width,
-      height,
-      0,
-      gl.RGBA,
-      gl.FLOAT,
-      null
-    );
+    var changed = true;
 
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-    const htk_Layer0 = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, htk_Layer0);
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
 
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      level,
-      gl.RGBA32F,
-      width,
-      height,
-      0,
-      gl.RGBA,
-      gl.FLOAT,
-      null
-    );
+    //--------------------------------------------------------------------------------------------------------------
+    //------------------------------------------create textures-----------------------------------------------------
+    //--------------------------------------------------------------------------------------------------------------
 
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-    const htk_Layer1 = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, htk_Layer1);
+    function createTexture(data) {
+      const tex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, tex);
 
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      level,
-      gl.RGBA32F,
-      width,
-      height,
-      0,
-      gl.RGBA,
-      gl.FLOAT,
-      null
-    );
-
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-    const pingpong_Layer0 = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, pingpong_Layer0);
-
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      level,
-      gl.RGBA32F,
-      width,
-      height,
-      0,
-      gl.RGBA,
-      gl.FLOAT,
-      null
-    );
-
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-    const pingpong_Layer1 = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, pingpong_Layer1);
-
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      level,
-      gl.RGBA32F,
-      width,
-      height,
-      0,
-      gl.RGBA,
-      gl.FLOAT,
-      null
-    );
-
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-    //images
-
-    const voronoi = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, voronoi);
-
-    // Fill the texture with a 1x1 blue pixel.
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      1,
-      1,
-      0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      new Uint8Array([0, 0, 255, 255])
-    );
-
-    // Asynchronously load an image
-    var voronoiImage = new Image();
-    voronoiImage.src = "./resources/voronoi.jpg";
-    voronoiImage.addEventListener("load", function () {
-      // Now that the image has loaded make copy it to the texture.
-      gl.bindTexture(gl.TEXTURE_2D, voronoi);
       gl.texImage2D(
         gl.TEXTURE_2D,
+        level,
+        gl.RGBA32F,
+        width,
+        height,
         0,
         gl.RGBA,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        voronoiImage
+        gl.FLOAT,
+        data
       );
-
-      gl.generateMipmap(gl.TEXTURE_2D);
 
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    });
 
-    const foam = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, foam);
-
-    // Fill the texture with a 1x1 blue pixel.
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      1,
-      1,
-      0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      new Uint8Array([0, 0, 255, 255])
-    );
-
-    // Asynchronously load an image
-    var foamImage = new Image();
-    foamImage.src = "./resources/thick-foam-bw.jpg";
-    foamImage.addEventListener("load", function () {
-      // Now that the image has loaded make copy it to the texture.
-      gl.bindTexture(gl.TEXTURE_2D, foam);
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        foamImage
-      );
-
-      gl.generateMipmap(gl.TEXTURE_2D);
-
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    });
-
-    const sky = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, sky);
-
-    // Fill the texture with a 1x1 blue pixel.
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      1,
-      1,
-      0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      new Uint8Array([0, 0, 255, 255])
-    );
-
-    // Asynchronously load an image
-    var skyImage = new Image();
-    skyImage.src = "./resources/sky.png";
-    skyImage.addEventListener("load", function () {
-      // Now that the image has loaded make copy it to the texture.
-      gl.bindTexture(gl.TEXTURE_2D, sky);
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        skyImage
-      );
-
-      gl.generateMipmap(gl.TEXTURE_2D);
-
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    });
-
-    const noise = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, noise);
-
-    var randomArray = new Float32Array(width * height * 4);
-    for(var i = 0; i < width * height * 4; i++){
-      randomArray[i] = Math.random();
+      return tex;
     }
 
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA32F,
-      width,
-      height,
-      0,
-      gl.RGBA,
-      gl.FLOAT,
-      randomArray
-    );
+    const h0k = createTexture(null);
+    const htk_Layer0 = createTexture(null);
+    const htk_Layer1 = createTexture(null);
+    const pingpong_Layer0 = createTexture(null);
+    const pingpong_Layer1 = createTexture(null);
 
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    var randomArray = new Float32Array(width * height * 4);
+    for (var i = 0; i < width * height * 4; i++) {
+      randomArray[i] = 0.5;
+    }
+    const noise = createTexture(randomArray);
 
-      //------------------------------camera movement controls------------------------------
-      var state = {
-        dragging: false,
-        lastMouseX: -1,
-        lastMouseY: -1,
-        angleY: Math.PI / 8,
-        angleX: 0,
-        radius: 650,
-      };
 
-      gl.canvas.addEventListener("mousedown", (event) => {
-        var x = event.clientX;
-        var y = event.clientY;
-        var rect = event.target.getBoundingClientRect();
+    //images
+    function createImageTexture(path) {
+      const tex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, tex);
 
-        if (
-          rect.left <= x &&
-          x < rect.right &&
-          rect.top <= y &&
-          y < rect.bottom
-        ) {
-          state.lastMouseX = x;
-          state.lastMouseY = y;
-          state.dragging = true;
-        }
-      });
-
-      gl.canvas.addEventListener("mouseup", (event) => {
-        state.dragging = false;
-      });
-
-      gl.canvas.addEventListener("mousemove", (event) => {
-        var x = event.clientX;
-        var y = event.clientY;
-        if (state.dragging) {
-          var factor = 5 / gl.canvas.height;
-          var dx = factor * (x - state.lastMouseX);
-          var dy = factor * (y - state.lastMouseY);
-
-          state.angleY = state.angleY + dy;
-          state.angleX = state.angleX + dx;
-          if (state.angleY < 0) state.angleY = 0;
-          if (state.angleY > Math.PI / 2 - 0.01)
-            state.angleY = Math.PI / 2 - 0.01;
-        }
-        state.lastMouseX = x;
-        state.lastMouseY = y;
-      });
-
-      gl.canvas.addEventListener("wheel", (event) => {
-        event.preventDefault();
-        state.radius = state.radius + event.deltaY * 0.1;
-        if (state.radius < 1) state.radius = 1;
-      });
-
-      //-------------create base grid for ocean------------------
-
-      var oceanGrid = [];
-      var mapSize = 512;
-      var offset = mapSize / 2;
-
-      for (var i = 0; i < mapSize - 1; i++) {
-        for (var j = 0; j < mapSize - 1; j++) {
-          oceanGrid.push(j - offset);
-          oceanGrid.push(0);
-          oceanGrid.push(i - offset);
-
-          oceanGrid.push(j - offset);
-          oceanGrid.push(0);
-          oceanGrid.push(i + 1 - offset);
-
-          oceanGrid.push(j + 1 - offset);
-          oceanGrid.push(0);
-          oceanGrid.push(i - offset);
-
-          oceanGrid.push(j + 1 - offset);
-          oceanGrid.push(0);
-          oceanGrid.push(i - offset);
-
-          oceanGrid.push(j - offset);
-          oceanGrid.push(0);
-          oceanGrid.push(i + 1 - offset);
-
-          oceanGrid.push(j + 1 - offset);
-          oceanGrid.push(0);
-          oceanGrid.push(i + 1 - offset);
-        }
-      }
-
-      const oceanArrays = {
-        position: oceanGrid,
-      };
-
-      const oceanBufferInfo = twgl.createBufferInfoFromArrays(gl, oceanArrays);
-
-      //-------------------------------create programs from shaders----------------------------------
-
-      const h0kprogram = twgl.createProgramInfo(gl, ["vs", "h0kfs"]);
-      const htkprogram = twgl.createProgramInfo(gl, ["vs", "htkfs"]);
-      const fftHprogram = twgl.createProgramInfo(gl, ["vs", "horizontal_fft"]);
-      const fftVprogram = twgl.createProgramInfo(gl, ["vs", "vertical_fft"]);
-      const oceanprogram = twgl.createProgramInfo(gl, ["ocean_vert","ocean_frag"]);
-
-      //------------------------------------------h0k-----------------------------------------------------
-      gl.disable(gl.DEPTH_TEST);
-
-      const fb = gl.createFramebuffer();
-      gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-
-      gl.framebufferTexture2D(
-        gl.FRAMEBUFFER,
-        gl.COLOR_ATTACHMENT0,
+      // Fill the texture with a 1x1 blue pixel.
+      gl.texImage2D(
         gl.TEXTURE_2D,
-        h0k,
-        level
+        0,
+        gl.RGBA,
+        1,
+        1,
+        0,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        new Uint8Array([0, 0, 255, 255])
       );
 
-      gl.useProgram(h0kprogram.program);
+      // Asynchronously load an image
+      var image = new Image();
+      image.src = path;
+      image.addEventListener("load", function () {
+        // Now that the image has loaded make copy it to the texture.
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(
+          gl.TEXTURE_2D,
+          0,
+          gl.RGBA,
+          gl.RGBA,
+          gl.UNSIGNED_BYTE,
+          image
+        );
 
-      gl.viewport(0, 0, width, height);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      });
+      return tex;
+    }
 
-      const arrays = {
-        position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
-        texcoord: [0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1],
-      };
+    const voronoi = createImageTexture("./resources/voronoi.jpg");
+    const foam = createImageTexture("./resources/thick-foam-bw.jpg");
+    const sky = createImageTexture("./resources/sky.png");
 
-      const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
+    //--------------------------------------------------------------------------------------------------------------
+    //---------------------------------------camera movement controls----------------------------------------------
+    //--------------------------------------------------------------------------------------------------------------
+    var state = {
+      dragging: false,
+      lastMouseX: -1,
+      lastMouseY: -1,
+      angleY: Math.PI / 8,
+      angleX: 0,
+      radius: 650,
+    };
 
-      const uniforms = {
-        width: width,
-        L: 512,
-        windDir: [1.0, 0.0],
-        windSpeed: 10.0,
-        depth: 20.0,
-        randomDistribution: 1,
-        spectrum: 1,
-        dispersionMode: 0,
-        directionalMode: 0,
-        spectrumScale: 5.0,
-        fetch: 1200000.0,
-        swell: 0.0,
-        Hs: 10.0,
-        JONSWAP_gamma: 3.3,
-        JONSWAP_sigmaA: 0.07,
-        JONSWAP_sigmaB: 0.09,
-        Bretschneider_wm: 0.0,
-        Ochi_lambda1: 3.0,
-        Ochi_lambda2: 0.0,
-        Ochi_wm1: 0.0,
-        Ochi_wm2: 0.0,
-        Ochi_Hs1: 0.0,
-        Ochi_Hs2: 0.0,
-        propagate: 1,
-        texRnd: noise,
-      };
+    gl.canvas.addEventListener("mousedown", (event) => {
+      var x = event.clientX;
+      var y = event.clientY;
+      var rect = event.target.getBoundingClientRect();
 
-      twgl.setUniforms(h0kprogram, uniforms);
-      twgl.setBuffersAndAttributes(gl, h0kprogram, bufferInfo);
-      twgl.drawBufferInfo(gl, bufferInfo);
+      if (
+        rect.left <= x &&
+        x < rect.right &&
+        rect.top <= y &&
+        y < rect.bottom
+      ) {
+        state.lastMouseX = x;
+        state.lastMouseY = y;
+        state.dragging = true;
+      }
+    });
 
-      console.log("1");
-      function render() {
+    gl.canvas.addEventListener("mouseup", (event) => {
+      state.dragging = false;
+    });
 
-        gl.disable(gl.DEPTH_TEST);
+    gl.canvas.addEventListener("mousemove", (event) => {
+      var x = event.clientX;
+      var y = event.clientY;
+      if (state.dragging) {
+        var factor = 5 / gl.canvas.height;
+        var dx = factor * (x - state.lastMouseX);
+        var dy = factor * (y - state.lastMouseY);
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-        //------------------------------------------htk-----------------------------------------------------
-        gl.viewport(0, 0, width, height);
+        state.angleY = state.angleY + dy;
+        state.angleX = state.angleX + dx;
+        if (state.angleY < 0) state.angleY = 0;
+        if (state.angleY > Math.PI / 2 - 0.01)
+          state.angleY = Math.PI / 2 - 0.01;
+      }
+      state.lastMouseX = x;
+      state.lastMouseY = y;
+    });
 
-        gl.useProgram(htkprogram.program);
+    gl.canvas.addEventListener("wheel", (event) => {
+      event.preventDefault();
+      state.radius = state.radius + event.deltaY * 0.1;
+      if (state.radius < 1) state.radius = 1;
+    });
 
-        gl.framebufferTexture2D(
+    //--------------------------------------------------------------------------------------------------------------
+    //----------------------------------------create base grid for ocean--------------------------------------------
+    //--------------------------------------------------------------------------------------------------------------
+
+    var oceanGrid = [];
+    var offset = mapSize / 2;
+
+    for (var i = 0; i < mapSize - 1; i++) {
+      for (var j = 0; j < mapSize - 1; j++) {
+        oceanGrid.push(j - offset);
+        oceanGrid.push(0);
+        oceanGrid.push(i - offset);
+
+        oceanGrid.push(j - offset);
+        oceanGrid.push(0);
+        oceanGrid.push(i + 1 - offset);
+
+        oceanGrid.push(j + 1 - offset);
+        oceanGrid.push(0);
+        oceanGrid.push(i - offset);
+
+        oceanGrid.push(j + 1 - offset);
+        oceanGrid.push(0);
+        oceanGrid.push(i - offset);
+
+        oceanGrid.push(j - offset);
+        oceanGrid.push(0);
+        oceanGrid.push(i + 1 - offset);
+
+        oceanGrid.push(j + 1 - offset);
+        oceanGrid.push(0);
+        oceanGrid.push(i + 1 - offset);
+      }
+    }
+
+    const oceanArrays = {
+      position: oceanGrid,
+    };
+    const oceanBufferInfo = twgl.createBufferInfoFromArrays(gl, oceanArrays);
+
+    const arrays = {
+      position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
+      texcoord: [0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1],
+    };
+    const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
+
+    const fb = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(
           gl.FRAMEBUFFER,
           gl.COLOR_ATTACHMENT0,
           gl.TEXTURE_2D,
-          htk_Layer0,
+          noise,
           level
         );
+
+    var pixels = new Float32Array(width * height * 4);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.FLOAT, pixels);
+    console.log(pixels);
+
+    //--------------------------------------------------------------------------------------------------------------
+    //-----------------------------------------create programs from shaders-----------------------------------------
+    //--------------------------------------------------------------------------------------------------------------
+
+    const h0kprogram = twgl.createProgramInfo(gl, ["vs", "h0kfs"]);
+    const htkprogram = twgl.createProgramInfo(gl, ["vs", "htkfs"]);
+    const fftHprogram = twgl.createProgramInfo(gl, ["vs", "horizontal_fft"]);
+    const fftVprogram = twgl.createProgramInfo(gl, ["vs", "vertical_fft"]);
+    const oceanprogram = twgl.createProgramInfo(gl, ["ocean_vert","ocean_frag"]);
+
+    //--------------------------------------------------------------------------------------------------------------
+    //--------------------------------------------create framebuffers-----------------------------------------------
+    //--------------------------------------------------------------------------------------------------------------
+    function createFramebuffer(nrOfAttch, textures) {
+      const fb = gl.createFramebuffer();
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+      for (var i = 0; i < textures.length; i++) {
         gl.framebufferTexture2D(
           gl.FRAMEBUFFER,
-          gl.COLOR_ATTACHMENT0 + 1,
+          gl.COLOR_ATTACHMENT0 + i,
           gl.TEXTURE_2D,
-          htk_Layer1,
+          textures[i],
           level
         );
-
+      }
+      if (textures.length == 2) {
         gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+      }
+      return fb;
+    }
 
-        const htkuniforms = {
+    const h0k_fb = createFramebuffer(1, [h0k]);
+    const htk_fb = createFramebuffer(2, [htk_Layer0, htk_Layer1]);
+    const fft_htkLayer0_fb = createFramebuffer(1, [htk_Layer0]);
+    const fft_htkLayer1_fb = createFramebuffer(1, [htk_Layer1]);
+    const fft_pingpong0_fb = createFramebuffer(1, [pingpong_Layer0]);
+    const fft_pingpong1_fb = createFramebuffer(1, [pingpong_Layer1]);
+
+    function render() {
+      //--------------------------------------------------------------------------------------------------------------
+      //------------------------------------------------------h0k-----------------------------------------------------
+      //--------------------------------------------------------------------------------------------------------------
+
+      gl.disable(gl.DEPTH_TEST);
+      gl.viewport(0, 0, width, height);
+
+      if (changed) {
+        gl.useProgram(h0kprogram.program);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, h0k_fb);
+
+        const uniforms = {
           width: width,
           L: 512,
-          timer: new Date() - startMS,
-          dispersionMode: 0,
+          windDir: [1.0, 0.0],
+          windSpeed: 10.0,
           depth: 20.0,
-          h0k: h0k,
+          randomDistribution: 1,
+          spectrum: 2,
+          dispersionMode: 0,
+          directionalMode: 0,
+          spectrumScale: 40.0,
+          fetch: 1200000.0,
+          swell: 0.0,
+          Hs: 10.0,
+          JONSWAP_gamma: 3.3,
+          JONSWAP_sigmaA: 0.07,
+          JONSWAP_sigmaB: 0.09,
+          Bretschneider_wm: 0.0,
+          Ochi_lambda1: 3.0,
+          Ochi_lambda2: 0.0,
+          Ochi_wm1: 0.0,
+          Ochi_wm2: 0.0,
+          Ochi_Hs1: 0.0,
+          Ochi_Hs2: 0.0,
+          propagate: 1,
+          texRnd: noise,
         };
 
-        twgl.setUniforms(htkprogram, htkuniforms);
-        twgl.setBuffersAndAttributes(gl, htkprogram, bufferInfo);
+        twgl.setUniforms(h0kprogram, uniforms);
+        twgl.setBuffersAndAttributes(gl, h0kprogram, bufferInfo);
         twgl.drawBufferInfo(gl, bufferInfo);
 
-        //------------------------------------------fft-----------------------------------------------------
-        //layer 0
-
-        const fb2 = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fb2);
-
-        gl.useProgram(fftHprogram.program);
-        var currentProgram = fftHprogram;
-        const fftuniforms = {};
-        fftuniforms.u_transformSize = width;
-
-        var iterations = Math.log2(width) * 2; //maybe can't be hard coded not sure gotta check
-        for (var i = 0; i < iterations; i += 1) {
-          if (i === 0) {
-            gl.framebufferTexture2D(
-              gl.FRAMEBUFFER,
-              gl.COLOR_ATTACHMENT0,
-              gl.TEXTURE_2D,
-              pingpong_Layer0,
-              level
-            );
-            fftuniforms.u_input = htk_Layer0;
-          } else if (i === iterations - 1) {
-            gl.framebufferTexture2D(
-              gl.FRAMEBUFFER,
-              gl.COLOR_ATTACHMENT0,
-              gl.TEXTURE_2D,
-              htk_Layer0,
-              level
-            );
-            fftuniforms.u_input = pingpong_Layer0;
-          } else if (i % 2 === 1) {
-            gl.framebufferTexture2D(
-              gl.FRAMEBUFFER,
-              gl.COLOR_ATTACHMENT0,
-              gl.TEXTURE_2D,
-              htk_Layer0,
-              level
-            );
-            fftuniforms.u_input = pingpong_Layer0;
-          } else {
-            gl.framebufferTexture2D(
-              gl.FRAMEBUFFER,
-              gl.COLOR_ATTACHMENT0,
-              gl.TEXTURE_2D,
-              pingpong_Layer0,
-              level
-            );
-            fftuniforms.u_input = htk_Layer0;
-          }
-
-          if (i === iterations / 2) {
-            currentProgram = fftVprogram;
-            gl.useProgram(fftVprogram.program);
-          }
-
-          fftuniforms.u_subtransformSize = Math.pow(
-            2,
-            (i % (iterations / 2)) + 1
-          );
-
-          twgl.setUniforms(currentProgram, fftuniforms);
-          twgl.setBuffersAndAttributes(gl, currentProgram, bufferInfo);
-          twgl.drawBufferInfo(gl, bufferInfo);
-        }
-
-        //var pixels = new Float32Array(width * height * 4);
-        //gl.readPixels(0, 0, width, height, gl.RGBA, gl.FLOAT, pixels);
-        //console.log(pixels);  
-
-        //layer 1
-
-        gl.useProgram(fftHprogram.program);
-        currentProgram = fftHprogram;
-
-        var iterations = Math.log2(width) * 2; //maybe can't be hard coded not sure gotta check
-        for (var i = 0; i < iterations; i += 1) {
-          if (i === 0) {
-            gl.framebufferTexture2D(
-              gl.FRAMEBUFFER,
-              gl.COLOR_ATTACHMENT0,
-              gl.TEXTURE_2D,
-              pingpong_Layer1,
-              level
-            );
-            fftuniforms.u_input = htk_Layer1;
-            fftuniforms.u_subtransformSize = Math.pow(
-              2,
-              (i % (iterations / 2)) + 1
-            );
-          } else if (i === iterations - 1) {
-            gl.framebufferTexture2D(
-              gl.FRAMEBUFFER,
-              gl.COLOR_ATTACHMENT0,
-              gl.TEXTURE_2D,
-              htk_Layer1,
-              level
-            );
-            fftuniforms.u_input = pingpong_Layer1;
-            fftuniforms.u_subtransformSize = Math.pow(
-              2,
-              (i % (iterations / 2)) + 1
-            );
-          } else if (i % 2 === 1) {
-            gl.framebufferTexture2D(
-              gl.FRAMEBUFFER,
-              gl.COLOR_ATTACHMENT0,
-              gl.TEXTURE_2D,
-              htk_Layer1,
-              level
-            );
-            fftuniforms.u_input = pingpong_Layer1;
-            fftuniforms.u_subtransformSize = Math.pow(
-              2,
-              (i % (iterations / 2)) + 1
-            );
-          } else {
-            gl.framebufferTexture2D(
-              gl.FRAMEBUFFER,
-              gl.COLOR_ATTACHMENT0,
-              gl.TEXTURE_2D,
-              pingpong_Layer1,
-              level
-            );
-            fftuniforms.u_input = htk_Layer1;
-            fftuniforms.u_subtransformSize = Math.pow(
-              2,
-              (i % (iterations / 2)) + 1
-            );
-          }
-
-          if (i === iterations / 2) {
-            currentProgram = fftVprogram;
-            gl.useProgram(fftVprogram.program);
-          }
-
-          twgl.setUniforms(currentProgram, fftuniforms);
-          twgl.setBuffersAndAttributes(gl, currentProgram, bufferInfo);
-          twgl.drawBufferInfo(gl, bufferInfo);
-        }
-
-        //------------------------------------Draw-----------------------------------------------
-
-        gl.enable(gl.DEPTH_TEST);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.useProgram(oceanprogram.program);
-
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
-        var camPos = [150, 50, 150];
-
-        const oceanUniforms = {
-          htk_Layer0: htk_Layer0,
-          htk_Layer1: htk_Layer1,
-          voronoi: voronoi,
-          foam: foam,
-          sky: sky,
-          L: 512,
-          heightMapSize: mapSize,
-          choppyFactor: 1.0,
-          l_dir: [1.0, 1.0, 1.0, 1.0],
-          camPos: camPos,
-          sampling: 0,
-          divisions: 8,
-          divisionsLightRay: 8,
-          exposure: 1.5,
-          betaR: [3.67044e-7, 1.11688e-6, 1.80601e-6],
-          betaMf: 5.76e-7,
-          Hr: 7994,
-          Hm: 1200,
-          g: 0.98,
-          sunAngles: [0, 10],
-        };
-
-        const fov = (30 * Math.PI) / 180;
-        const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-        const zNear = 1;
-        const zFar = 10000;
-        const projection = m4.perspective(fov, aspect, zNear, zFar);
-        const eye = [
-          state.radius *
-            Math.cos(state.angleX) *
-            Math.sin(Math.PI / 2 - state.angleY),
-          state.radius * Math.cos(Math.PI / 2 - state.angleY),
-          state.radius *
-            Math.sin(state.angleX) *
-            Math.sin(Math.PI / 2 - state.angleY),
-        ];
-        const target = [0, 0, 0];
-        const up = [0, 1, 0];
-
-        const camera = m4.lookAt(eye, target, up);
-        const view = m4.inverse(camera);
-        const viewProjection = m4.multiply(projection, view);
-        const world = m4.identity();
-
-        oceanUniforms.m_view = camera;
-        oceanUniforms.m_normal = m4.transpose(m4.inverse(world));
-        oceanUniforms.m_pvm = m4.multiply(viewProjection, world);
-
-        twgl.setUniforms(oceanprogram, oceanUniforms);
-        twgl.setBuffersAndAttributes(gl, oceanprogram, oceanBufferInfo);
-        twgl.drawBufferInfo(gl, oceanBufferInfo);
-
-        requestAnimationFrame(render);
+        changed = false;
       }
+
+      //--------------------------------------------------------------------------------------------------------------
+      //---------------------------------------------------htk--------------------------------------------------------
+      //--------------------------------------------------------------------------------------------------------------
+
+      gl.useProgram(htkprogram.program);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, htk_fb);
+
+      const htkuniforms = {
+        width: width,
+        L: 512,
+        timer: new Date() - startMS,
+        dispersionMode: 0,
+        depth: 20.0,
+        h0k: h0k,
+      };
+
+      twgl.setUniforms(htkprogram, htkuniforms);
+      twgl.setBuffersAndAttributes(gl, htkprogram, bufferInfo);
+      twgl.drawBufferInfo(gl, bufferInfo);
+
+      //--------------------------------------------------------------------------------------------------------------
+      //--------------------------------------------------fft---------------------------------------------------------
+      //--------------------------------------------------------------------------------------------------------------
+
+      //layer 0
+
+      gl.useProgram(fftHprogram.program);
+      var currentProgram = fftHprogram;
+      const fftuniforms = {};
+      fftuniforms.u_transformSize = width;
+
+      var iterations = Math.log2(width) * 2;
+      for (var i = 0; i < iterations; i += 1) {
+        if (i === 0) {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, fft_pingpong0_fb);
+          fftuniforms.u_input = htk_Layer0;
+        } else if (i === iterations - 1) {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, fft_htkLayer0_fb);
+          fftuniforms.u_input = pingpong_Layer0;
+        } else if (i % 2 === 1) {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, fft_htkLayer0_fb);
+          fftuniforms.u_input = pingpong_Layer0;
+        } else {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, fft_pingpong0_fb);
+          fftuniforms.u_input = htk_Layer0;
+        }
+
+        if (i === iterations / 2) {
+          currentProgram = fftVprogram;
+          gl.useProgram(fftVprogram.program);
+        }
+        fftuniforms.u_subtransformSize = Math.pow(
+          2,
+          (i % (iterations / 2)) + 1
+        );
+
+        twgl.setUniforms(currentProgram, fftuniforms);
+        twgl.setBuffersAndAttributes(gl, currentProgram, bufferInfo);
+        twgl.drawBufferInfo(gl, bufferInfo);
+      }
+
+      //layer 1
+
+      gl.useProgram(fftHprogram.program);
+      currentProgram = fftHprogram;
+
+      var iterations = Math.log2(width) * 2;
+      for (var i = 0; i < iterations; i += 1) {
+        if (i === 0) {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, fft_pingpong1_fb);
+          fftuniforms.u_input = htk_Layer1;
+        } else if (i === iterations - 1) {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, fft_htkLayer1_fb);
+          fftuniforms.u_input = pingpong_Layer1;
+        } else if (i % 2 === 1) {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, fft_htkLayer1_fb);
+          fftuniforms.u_input = pingpong_Layer1;
+        } else {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, fft_pingpong1_fb);
+          fftuniforms.u_input = htk_Layer1;
+        }
+
+        if (i === iterations / 2) {
+          currentProgram = fftVprogram;
+          gl.useProgram(fftVprogram.program);
+        }
+        fftuniforms.u_subtransformSize = Math.pow(
+          2,
+          (i % (iterations / 2)) + 1
+        );
+
+        twgl.setUniforms(currentProgram, fftuniforms);
+        twgl.setBuffersAndAttributes(gl, currentProgram, bufferInfo);
+        twgl.drawBufferInfo(gl, bufferInfo);
+      }
+
+      //--------------------------------------------------------------------------------------------------------------
+      //--------------------------------------------------Draw--------------------------------------------------------
+      //--------------------------------------------------------------------------------------------------------------
+
+      gl.enable(gl.DEPTH_TEST);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.useProgram(oceanprogram.program);
+
+      twgl.resizeCanvasToDisplaySize(gl.canvas);
+      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+      var camPos = [150, 50, 150];
+
+      const oceanUniforms = {
+        htk_Layer0: htk_Layer0,
+        htk_Layer1: htk_Layer1,
+        voronoi: voronoi,
+        foam: foam,
+        sky: sky,
+        L: 512,
+        heightMapSize: mapSize,
+        choppyFactor: 1.0,
+        l_dir: [1.0, 1.0, 1.0, 1.0],
+        camPos: camPos,
+        sampling: 0,
+        divisions: 8,
+        divisionsLightRay: 8,
+        exposure: 1.5,
+        betaR: [3.67044e-7, 1.11688e-6, 1.80601e-6],
+        betaMf: 5.76e-7,
+        Hr: 7994,
+        Hm: 1200,
+        g: 0.98,
+        sunAngles: [0, 10],
+      };
+
+      const fov = (30 * Math.PI) / 180;
+      const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+      const zNear = 1;
+      const zFar = 10000;
+      const projection = m4.perspective(fov, aspect, zNear, zFar);
+      const eye = [
+        state.radius *
+          Math.cos(state.angleX) *
+          Math.sin(Math.PI / 2 - state.angleY),
+        state.radius * Math.cos(Math.PI / 2 - state.angleY),
+        state.radius *
+          Math.sin(state.angleX) *
+          Math.sin(Math.PI / 2 - state.angleY),
+      ];
+      const target = [0, 0, 0];
+      const up = [0, 1, 0];
+
+      const camera = m4.lookAt(eye, target, up);
+      const view = m4.inverse(camera);
+      const viewProjection = m4.multiply(projection, view);
+      const world = m4.identity();
+
+      oceanUniforms.m_view = camera;
+      oceanUniforms.m_normal = m4.transpose(m4.inverse(world));
+      oceanUniforms.m_pvm = m4.multiply(viewProjection, world);
+
+      twgl.setUniforms(oceanprogram, oceanUniforms);
+      twgl.setBuffersAndAttributes(gl, oceanprogram, oceanBufferInfo);
+      twgl.drawBufferInfo(gl, oceanBufferInfo);
+
       requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
   </script>
 </html>
