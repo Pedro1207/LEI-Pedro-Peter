@@ -2,17 +2,22 @@
 <html>
   <head>
     <meta charset="utf8" />
+    <link href="waves.css" rel="stylesheet" type="text/css">
 
     <title>WebGL Ocean</title>
     <style>
       body {
         margin: 0;
         font-family: monospace;
+        display: flex;
+        justify-content: center;
+        
       }
       canvas {
         display: block;
-        width: 100vw;
+        width: 60vw;
         height: 100vh;
+        flex:60%;
       }
       #b {
         position: absolute;
@@ -24,8 +29,148 @@
     </style>
   </head>
   <body>
+    <div class="algoritmos">
+      <div class="dropdown">
+        <button class="dropbtn">Algoritmos</button>
+        <div class="dropdown-content">
+          <select id="alg">
+            <option value="" selected disabled hidden>Choose here</option>
+            <option value = "JONSWAP">JONSWAP</option>
+            <option value = "Ochi">Ochi</option>
+            <option value = "Bretschneider">Bretschneider</option>
+          </select>
+        </div>
+      </div>
+      <canvas class="graph" id="graphs"></canvas>
+    </div>
+   
     <canvas id="c"></canvas>
+    <div class="slidecontainer">
+      <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+      <script type="text/javascript">
+          $(function () {
+              $("#alg").change(function () {
+                  if ($(this).val() == "JONSWAP") {
+                      $("#optionJonh").show(); 
+                      $("#optionOchi").hide();
+                      $("#optionBret").hide();
+                  } else if($(this).val() == "Ochi") {
+                      $("#optionOchi").show();
+                      $("#optionJonh").hide();
+                      $("#optionBret").hide();
+                  } else if ($(this).val() == "Bretschneider") {
+                      $("#optionBret").show();
+                      $("#optionOchi").hide();
+                      $("#optionJonh").hide();
+                  } else {
+                      $("#optionOchi").hide();
+                      $("#optionJonh").hide();
+                      $("#optionBret").hide();
+                  }
+              });
+          });
+        </script>
+
+      <label for="L"> L : <output id="l">512</output></label> 
+      <input type="range" min="1" max="8192" value="512" class="slider" id="L" oninput="l.value=value"> </input>
+
+      <label for="WindSpeed">WindSpeed : <output id="windSpeed">50</output></label>
+      <input type="range" min="0" max="1000" value="50" class="slider" id="WindSpeed" oninput="windSpeed.value=value"></input>
+
+      <label for="WindDirection">WindDirection : <output id="windDirection">25</output></label>
+      <input type="range" min="0" max="100" value="25" class="slider" id="WindDirection" oninput="windDirection.value=value"></input>
+               
+      <label for="sp. scale">sp. scale : <output id="spscale">1</output></label>
+      <input type="range" min="0.1" max="100" value="1" class="slider" step="0.02" id="sp. scale" oninput="spscale.value=value"></input>
+
+      <label for="Chopiness">Chopiness : <output id="chopiness">1</output></label>
+      <input type="range" min="0" max="10" value="1" step="0.1" class="slider" id="Chopiness" oninput="chopiness.value=value"></input>
+
+      <label for="Propagate Waves">Propagate Waves : <output id="propagateWaves">1</output></label>
+      <input type="range" min="0" max="1" value="1" class="slider" id="Propagate Waves" oninput="propagateWaves.value=value"></input>
+
+      <label for="Ocean Depth">Ocean Depth : <output id="oceanDepth">25</output></label>
+      <input type="range" min="0.1" max="1000" value="25" step="0.1" class="slider" id="Ocean Depth" oninput="oceanDepth.value=value"></input>
+
+      <label for="Horvath Swell">Horvath Swell : <output id="horvathSwell">0.5</output></label>
+      <input type="range" min="0" max="1" value="0.5" step="0.1" class="slider" id="Horvath Swell" oninput="horvathSwell.value=value"></input>
+
+      <label for="Ocean Type">Ocean Type : <output id="oceanType">1</output></label>
+      <input type="range" min="1" max="10" value="1" class="slider" id="Ocean Type" oninput="oceanType.value=value"></input>
+
+      
+      <div id="optionJonh" style="display: none" class="slidecontainer">
+      <label for="JONSWAP fetch"> JONSWAP fetch : <output id="jf">150000</output></label> 
+      <input type="range" min="100000" max="10000000" value="150000" step="10000" class="slider" id="JONSWAP fetch" oninput="jf.value=value"> </input>
+      <label for="JONSWAP gamma"> JONSWAP gamma : <output id="jg">2</output></label> 
+      <input type="range" min="1" max="7" value="2" step="0.01" class="slider" id="JONSWAP gamma" oninput="jg.value=value"> </input>
+      <label for="JONSWAP sigma A">JONSWAP sigma A : <output id="jsa">1</output></label> 
+      <input type="range" min="0.001" max="5" value="1" step="0.001" class="slider" id="JONSWAP sigma A" oninput="jsa.value=value"> </input>
+      <label for="JONSWAP sigma B"> JONSWAP sigma B : <output id="jsb">1</output></label> 
+      <input type="range" min="0.001" max="5" value="1" step="0.001" class="slider" id="JONSWAP sigma B" oninput="jsb.value=value"> </input>
+      </div>
+
+      <div id="optionBret" style="display: none" class="slidecontainer">
+        <label for="Bretschneider wm"> Bretschneider wm : <output id="bw">1</output></label> 
+        <input type="range" min="0.001" max="5" value="1" step="0.001" class="slider" id="Bretschneider wm" oninput="bw.value=value"> </input>
+      </div>
+
+      <div id="optionOchi" style="display: none" class="slidecontainer">
+        <label for="Ochi_lambda1"> Ochi lambda A : <output id="ol1">1</output></label> 
+        <input type="range" min="0.001" max="10" value="1" step="0.001" class="slider" id="Ochi_lambda1" oninput="ol1.value=value"> </input>
+        <label for="Ochi_wm1"> Ochi wm A : <output id="ow1">1</output></label> 
+        <input type="range" min="0.01" max="2" value="1" step="0.1" class="slider" id="Ochi_wm1" oninput="ow1.value=value"> </input>
+        <label for="Ochi_Hs1">Ochi Hs A : <output id="oh1">2</output></label> 
+        <input type="range" min="0.1" max="100" value="2" step="0.1" class="slider" id="Ochi_Hs1" oninput="oh1.value=value"> </input>
+        <label for="Ochi_lambda2"> Ochi lambda B: <output id="ol2">2</output></label> 
+        <input type="range" min="0.001" max="10" value="2" step="0.001" class="slider" id="Ochi_lambda2" oninput="ol2.value=value"> </input>
+        <label for="Ochi_wm2"> Ochi wm B: <output id="ow2">1</output></label> 
+        <input type="range" min="0.01" max="2" value="1" step="0.1" class="slider" id="Ochi_wm2" oninput="ow2.value=value"> </input>
+        <label for="Ochi_Hs2">Ochi Hs B : <output id="oh2">1</output></label> 
+        <input type="range" min="0.1" max="1" value="100" step="0.1" class="slider" id="Ochi_Hs2" oninput="oh2.value=value"> </input>
+      </div>
+
+      </div>
   </body>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.js" integrity="sha512-CAv0l04Voko2LIdaPmkvGjH3jLsH+pmTXKFoyh5TIimAME93KjejeP9j7wSeSRXqXForv73KUZGJMn8/P98Ifg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    var ctx = document.getElementById('graphs').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+            datasets: [{
+                label: '# of Votes',
+                data: [12, 19, 3, 5, 2, 3],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    </script>
 
   <script id="vs" type="notjs">
     #version 300 es
@@ -39,10 +184,11 @@
 
     void main() {
 
-      gl_Position = position;
+      gl_Position = vec4(position.xyz, 1.0);
       texCoordV = texcoord;
     }
   </script>
+  
   <script id="h0kfs" type="notjs">
     #version 300 es
 
@@ -752,8 +898,9 @@
     	float z1, z2;
 
     	// clamp to prevent values equal to zero
-    	vec4 z = clamp(texelFetch(texRnd, ivec2(texCoordV * float(width)), 0), 0.000001, 1.0);
-    	z1 = z.x-0.5;
+    	//vec4 z = clamp(texelFetch(texRnd, ivec2(texCoordV * float(width)), 0), 0.000001, 1.0);
+      vec4 z = vec4(0.5, 0.5, 0.5, 0.5);
+      z1 = z.x-0.5;
     	z2 = z.y-0.5;
 
     	if (randomDistribution == RANDOM_NORMAL || randomDistribution == RANDOM_LOG) {
@@ -959,6 +1106,7 @@
 
     	// dy
     	vec2 h_k_t_dy = mult(fourier_amp, exp_iwt) + mult(fourier_amp_conj, exp_iwt_inv);
+      vec2 testing = h_k_t_dy;
 
     	// dx
     	vec2 dx = vec2(0.0, -k.x/magnitude);
@@ -1021,7 +1169,7 @@
     layout (location = 0) out vec4 FragColor;
 
       	vec2 multiplyComplex (vec2 a, vec2 b) {
-          return vec2(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+          return vec2(a[0] * b[0] - a[1] * b[1], a[1] * b[0] + a[0] * b[1]);
       	}
 
       	void main (void) {
@@ -1060,7 +1208,7 @@
     layout (location = 0) out vec4 FragColor;
 
     vec2 multiplyComplex (vec2 a, vec2 b) {
-      return vec2(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+      return vec2(a[0] * b[0] - a[1] * b[1], a[1] * b[0] + a[0] * b[1]);
     }
 
     void main (void) {
@@ -1587,6 +1735,8 @@
     }
   </script>
 
+  
+
   <script type="module">
     import * as twgl from "./twgl-full.module.js";
     const gl = document.querySelector("#c").getContext("webgl2");
@@ -1601,11 +1751,9 @@
     const width = 512;
     const height = 512;
     const level = 0;
-    const mapSize = 512;
-
+    const mapSize = 256;
 
     var changed = true;
-
 
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
@@ -1648,7 +1796,7 @@
 
     var randomArray = new Float32Array(width * height * 4);
     for (var i = 0; i < width * height * 4; i++) {
-      randomArray[i] = 0.5;
+      randomArray[i] = Math.random();
     }
     const noise = createTexture(randomArray);
 
@@ -1811,9 +1959,6 @@
           level
         );
 
-    var pixels = new Float32Array(width * height * 4);
-    gl.readPixels(0, 0, width, height, gl.RGBA, gl.FLOAT, pixels);
-    console.log(pixels);
 
     //--------------------------------------------------------------------------------------------------------------
     //-----------------------------------------create programs from shaders-----------------------------------------
@@ -1853,10 +1998,86 @@
     const fft_pingpong0_fb = createFramebuffer(1, [pingpong_Layer0]);
     const fft_pingpong1_fb = createFramebuffer(1, [pingpong_Layer1]);
 
+
+    //--------------------------------------------------------------------------------------------------------------
+    //--------------------------------------------create variable state---------------------------------------------
+    //--------------------------------------------------------------------------------------------------------------
+
+
+    var ocean_variables = {
+      width: width,
+      L: 512,
+      windDir: [1.0, 0.0],
+      windSpeed: 10.0,
+      depth: 20.0,
+      randomDistribution: 1,
+      spectrum: 2,
+      dispersionMode: 0,
+      directionalMode: 0,
+      spectrumScale: 10.0,
+      fetch: 1200000.0,
+      swell: 0.0,
+      Hs: 10.0,
+      JONSWAP_gamma: 3.3,
+      JONSWAP_sigmaA: 0.07,
+      JONSWAP_sigmaB: 0.09,
+      Bretschneider_wm: 0.0,
+      Ochi_lambda1: 3.0,
+      Ochi_lambda2: 0.0,
+      Ochi_wm1: 0.0,
+      Ochi_wm2: 0.0,
+      Ochi_Hs1: 0.0,
+      Ochi_Hs2: 0.0,
+      propagate: 1,
+      heightMapSize: mapSize,
+      choppyFactor: 1.0,
+      l_dir: [1.0, 1.0, 1.0, 1.0],
+      sampling: 0,
+      divisions: 8,
+      divisionsLightRay: 8,
+      exposure: 1.5,
+      betaR: [3.67044e-7, 1.11688e-6, 1.80601e-6],
+      betaMf: 5.76e-7,
+      Hr: 7994,
+      Hm: 1200,
+      g: 0.98,
+      sunAngles: [0, 10],
+    }
+
+
     function render() {
       //--------------------------------------------------------------------------------------------------------------
       //------------------------------------------------------h0k-----------------------------------------------------
       //--------------------------------------------------------------------------------------------------------------
+      function updateValue(slider, variable){
+        var slider_value = document.getElementById(slider).value;
+        if(slider_value != variable){
+          changed = true;
+        }
+        return slider_value;
+      }
+      
+      ocean_variables.L = updateValue("l", ocean_variables.L);
+      ocean_variables.windSpeed = updateValue("windSpeed", ocean_variables.windSpeed);
+      //ocean_variables.windDir = updateValue("windDirection", ocean_variables.windDirection);
+      ocean_variables.spectrumScale = updateValue("spscale", ocean_variables.spectrumScale);
+      ocean_variables.choppyFactor = updateValue("chopiness", ocean_variables.choppyFactor);
+      ocean_variables.propagate = updateValue("propagateWaves", ocean_variables.propagate);
+      ocean_variables.depth = updateValue("oceanDepth", ocean_variables.depth);
+      ocean_variables.horvathSwell = updateValue("horvathSwell", ocean_variables.horvathSwell);
+      ocean_variables.oceanType = updateValue("oceanType", ocean_variables.oceanType);
+      ocean_variables.fetch = updateValue("jf", ocean_variables.fetch);
+      ocean_variables.JONSWAP_gamma = updateValue("jg", ocean_variables.JONSWAP_gamma);
+      ocean_variables.JONSWAP_sigmaA = updateValue("jsa", ocean_variables.JONSWAP_sigmaA);
+      ocean_variables.JONSWAP_sigmaB = updateValue("jsb", ocean_variables.JONSWAP_sigmaB);
+      ocean_variables.Bretschneider_wm = updateValue("bw", ocean_variables.Bretschneider_wm);
+      ocean_variables.Ochi_lambda1 = updateValue("ol1", ocean_variables.Ochi_lambda1);
+      ocean_variables.Ochi_lambda2 = updateValue("ol2", ocean_variables.Ochi_lambda2);
+      ocean_variables.Ochi_Hs1 = updateValue("oh1", ocean_variables.Ochi_Hs1);
+      ocean_variables.Ochi_Hs2 = updateValue("oh2", ocean_variables.Ochi_Hs2);
+      ocean_variables.Ochi_wm1 = updateValue("ow1", ocean_variables.Ochi_wm1);
+      ocean_variables.Ochi_wm2 = updateValue("ow2", ocean_variables.Ochi_wm2);
+
 
       gl.disable(gl.DEPTH_TEST);
       gl.viewport(0, 0, width, height);
@@ -1866,30 +2087,30 @@
         gl.bindFramebuffer(gl.FRAMEBUFFER, h0k_fb);
 
         const uniforms = {
-          width: width,
-          L: 512,
-          windDir: [1.0, 0.0],
-          windSpeed: 10.0,
-          depth: 20.0,
-          randomDistribution: 1,
-          spectrum: 2,
-          dispersionMode: 0,
-          directionalMode: 0,
-          spectrumScale: 40.0,
-          fetch: 1200000.0,
-          swell: 0.0,
-          Hs: 10.0,
-          JONSWAP_gamma: 3.3,
-          JONSWAP_sigmaA: 0.07,
-          JONSWAP_sigmaB: 0.09,
-          Bretschneider_wm: 0.0,
-          Ochi_lambda1: 3.0,
-          Ochi_lambda2: 0.0,
-          Ochi_wm1: 0.0,
-          Ochi_wm2: 0.0,
-          Ochi_Hs1: 0.0,
-          Ochi_Hs2: 0.0,
-          propagate: 1,
+          width: ocean_variables.width,
+          L: ocean_variables.L,
+          windDir: ocean_variables.windDir,
+          windSpeed: ocean_variables.windSpeed,
+          depth: ocean_variables.depth,
+          randomDistribution: ocean_variables.randomDistribution,
+          spectrum: ocean_variables.spectrum,
+          dispersionMode: ocean_variables.dispersionMode,
+          directionalMode: ocean_variables.directionalMode,
+          spectrumScale: ocean_variables.spectrumScale,
+          fetch: ocean_variables.fetch,
+          swell: ocean_variables.swell,
+          Hs: ocean_variables.Hs,
+          JONSWAP_gamma: ocean_variables.JONSWAP_gamma,
+          JONSWAP_sigmaA: ocean_variables.JONSWAP_sigmaA,
+          JONSWAP_sigmaB: ocean_variables.JONSWAP_sigmaB,
+          Bretschneider_wm: ocean_variables.Bretschneider_wm,
+          Ochi_lambda1: ocean_variables.Ochi_lambda1,
+          Ochi_lambda2: ocean_variables.Ochi_lambda2,
+          Ochi_wm1: ocean_variables.Ochi_wm1,
+          Ochi_wm2: ocean_variables.Ochi_wm2,
+          Ochi_Hs1: ocean_variables.Ochi_Hs1,
+          Ochi_Hs2: ocean_variables.Ochi_Hs2,
+          propagate: ocean_variables.propagate,
           texRnd: noise,
         };
 
@@ -1908,17 +2129,18 @@
       gl.bindFramebuffer(gl.FRAMEBUFFER, htk_fb);
 
       const htkuniforms = {
-        width: width,
-        L: 512,
+        width: ocean_variables.width,
+        L: ocean_variables.L,
         timer: new Date() - startMS,
-        dispersionMode: 0,
-        depth: 20.0,
+        dispersionMode: ocean_variables.dispersionMode,
+        depth: ocean_variables.depth,
         h0k: h0k,
       };
 
       twgl.setUniforms(htkprogram, htkuniforms);
       twgl.setBuffersAndAttributes(gl, htkprogram, bufferInfo);
       twgl.drawBufferInfo(gl, bufferInfo);
+
 
       //--------------------------------------------------------------------------------------------------------------
       //--------------------------------------------------fft---------------------------------------------------------
@@ -1929,9 +2151,9 @@
       gl.useProgram(fftHprogram.program);
       var currentProgram = fftHprogram;
       const fftuniforms = {};
-      fftuniforms.u_transformSize = width;
+      fftuniforms.u_transformSize = ocean_variables.width;
 
-      var iterations = Math.log2(width) * 2;
+      var iterations = Math.log2(ocean_variables.width) * 2;
       for (var i = 0; i < iterations; i += 1) {
         if (i === 0) {
           gl.bindFramebuffer(gl.FRAMEBUFFER, fft_pingpong0_fb);
@@ -1996,6 +2218,13 @@
         twgl.drawBufferInfo(gl, bufferInfo);
       }
 
+      /*
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fft_htkLayer0_fb);
+
+      var pixels = new Float32Array(width * height * 4);
+      gl.readPixels(0, 0, width, height, gl.RGBA, gl.FLOAT, pixels);
+      console.log(pixels);
+      */
       //--------------------------------------------------------------------------------------------------------------
       //--------------------------------------------------Draw--------------------------------------------------------
       //--------------------------------------------------------------------------------------------------------------
@@ -2009,30 +2238,6 @@
       twgl.resizeCanvasToDisplaySize(gl.canvas);
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-      var camPos = [150, 50, 150];
-
-      const oceanUniforms = {
-        htk_Layer0: htk_Layer0,
-        htk_Layer1: htk_Layer1,
-        voronoi: voronoi,
-        foam: foam,
-        sky: sky,
-        L: 512,
-        heightMapSize: mapSize,
-        choppyFactor: 1.0,
-        l_dir: [1.0, 1.0, 1.0, 1.0],
-        camPos: camPos,
-        sampling: 0,
-        divisions: 8,
-        divisionsLightRay: 8,
-        exposure: 1.5,
-        betaR: [3.67044e-7, 1.11688e-6, 1.80601e-6],
-        betaMf: 5.76e-7,
-        Hr: 7994,
-        Hm: 1200,
-        g: 0.98,
-        sunAngles: [0, 10],
-      };
 
       const fov = (30 * Math.PI) / 180;
       const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -2055,6 +2260,29 @@
       const view = m4.inverse(camera);
       const viewProjection = m4.multiply(projection, view);
       const world = m4.identity();
+
+      const oceanUniforms = {
+        htk_Layer0: htk_Layer0,
+        htk_Layer1: htk_Layer1,
+        voronoi: voronoi,
+        foam: foam,
+        sky: sky,
+        L: ocean_variables.L,
+        heightMapSize: ocean_variables.heightMapSize,
+        choppyFactor: ocean_variables.choppyFactor,
+        l_dir: ocean_variables.l_dir,
+        camPos: eye,
+        sampling: ocean_variables.sampling,
+        divisions: ocean_variables.divisions,
+        divisionsLightRay: ocean_variables.divisionsLightRay,
+        exposure: ocean_variables.exposure,
+        betaR: ocean_variables.betaR,
+        betaMf: ocean_variables.betaMf,
+        Hr: ocean_variables.Hr,
+        Hm: ocean_variables.Hm,
+        g: ocean_variables.g,
+        sunAngles: ocean_variables.sunAngles,
+      };
 
       oceanUniforms.m_view = camera;
       oceanUniforms.m_normal = m4.transpose(m4.inverse(world));

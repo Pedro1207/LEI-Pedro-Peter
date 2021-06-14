@@ -142,9 +142,9 @@ void main(void) {
 //	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DY), 
 //		texelFetch(tilde_h0k, ivec2(gl_GlobalInvocationID.xy),0));
 //	return;	
-	float t = (timer+1e7) / 1000;
+	float t = (500+1e7) / 1000;
 	//float t = timer/1000;
-	ivec2 pos = ivec2(texCoordV * 512);
+	ivec2 pos = ivec2(texCoordV * width);
 
 	int kx = pos.x >= width/2 ? pos.x - width: pos.x;
 	int kz = pos.y >= width/2 ? pos.y - width: pos.y;
@@ -159,10 +159,10 @@ void main(void) {
 	
 	float w = getDispersionW(magnitude, depth, dispersionMode);
 	
-	vec4 spectrum = texelFetch(tilde_h0k, ivec2(texCoordV * 512),0);
+	vec4 spectrum = texelFetch(tilde_h0k, ivec2(texCoordV * width),0);
 	int x,y;
-	x = (width - int(texCoordV.x * 512)) % width;
-	y = (width - int(texCoordV.y * 512)) % width;
+	x = (width - int(texCoordV.x * width)) % width;
+	y = (width - int(texCoordV.y * width)) % width;
 	vec4 spectrumC = texelFetch(tilde_h0k, ivec2(x,y),0);
 
 	vec2 fourier_amp = spectrum.xy;
@@ -176,6 +176,8 @@ void main(void) {
 
 	// dy
 	vec2 h_k_t_dy = mult(fourier_amp, exp_iwt) + mult(fourier_amp_conj, exp_iwt_inv);
+	vec2 testing = h_k_t_dy;
+
 //	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DY), vec4(h_k_t_dy, cosinus, sinus));
 //	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DY), vec4(fourier_amp, fourier_amp_conj));
 //	return;	
@@ -219,9 +221,8 @@ void main(void) {
 	vec2 dy = h_k_t_dy + vec2(-a.y, a.x);
 	vec2 dxz = h_k_t_dx + vec2(-h_k_t_dz.y, h_k_t_dz.x);
 	vec2 sxz = sx + vec2(-sz.y, sz.x);
-	imageStore(tilde_hkt, ivec3(texCoordV * 512, LAYER_Y_JXY_JXX_JYY), vec4(dy, b));
-	imageStore(tilde_hkt, ivec3(texCoordV * 512, LAYER_DX_DZ_SX_SZ), vec4(dxz,sxz));
-	imageStore(test, ivec3(texCoordV * 512, LAYER_Y_JXY_JXX_JYY), vec4(dy, b));
+	imageStore(tilde_hkt, ivec3(texCoordV * width, LAYER_Y_JXY_JXX_JYY), vec4(dy, b));
+	imageStore(tilde_hkt, ivec3(texCoordV * width, LAYER_DX_DZ_SX_SZ), vec4(dxz,sxz));
     discard;
 //	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_DXZ), vec4(h_k_t_dx, h_k_t_dz));
 //	imageStore(tilde_hkt, ivec3(gl_GlobalInvocationID.xy, LAYER_SXZ), vec4(sx, sz));

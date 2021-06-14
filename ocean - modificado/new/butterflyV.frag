@@ -75,6 +75,7 @@ in vec2 texCoordV;
 // ping pong textures
 layout (binding = 0, rgba32f) uniform image2DArray pingpong0;
 layout (binding = 1, rgba32f) uniform image2DArray pingpong1;
+layout (binding = 2, rgba32f) uniform image2DArray test;
 
 uniform int pingpong;
 uniform int log_width;
@@ -149,6 +150,8 @@ void main() {
 		vec4 cm = complexMultTwice(ww, elemks);
 		imageStore(pingpong1, ivec3(line, index, LAYER_Y_JXY_JXX_JYY), elemk + cm);
 		imageStore(pingpong1, ivec3(line, index + shift, LAYER_Y_JXY_JXX_JYY), elemk - cm);
+		imageStore(test, ivec3(line, index, LAYER_Y_JXY_JXX_JYY), elemk + cm);
+		imageStore(test, ivec3(line, index + shift, LAYER_Y_JXY_JXX_JYY), elemk - cm);
 
 		cm = complexMultTwice(ww,elemxzs);
 		imageStore(pingpong1, ivec3(line, index, LAYER_DX_DZ_SX_SZ), elemxz + cm);
@@ -177,6 +180,8 @@ void main() {
 		vec4 cm = complexMultTwice(ww, elemks);
 		imageStore(pingpong0, ivec3(line, index, LAYER_Y_JXY_JXX_JYY), elemk + cm);
 		imageStore(pingpong0, ivec3(line, index + shift, LAYER_Y_JXY_JXX_JYY), elemk - cm);
+		imageStore(test, ivec3(line, index, LAYER_Y_JXY_JXX_JYY), elemk + cm);
+		imageStore(test, ivec3(line, index + shift, LAYER_Y_JXY_JXX_JYY), elemk - cm);
 
 		cm = complexMultTwice(ww, elemxzs);
 		imageStore(pingpong0, ivec3(line, index, LAYER_DX_DZ_SX_SZ), elemxz + cm);

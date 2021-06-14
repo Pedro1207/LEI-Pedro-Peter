@@ -284,10 +284,6 @@
 		<material name="fft_hkt">
 			<shader name="hkt">
 				<values>
-					<valueof uniform="test"
-							 type="IMAGE_TEXTURE" context="CURRENT"
-							 id=1 component="UNIT" />
-
 					<valueof uniform="tilde_hkt"
 							 type="IMAGE_TEXTURE" context="CURRENT"
 							 id=0 component="UNIT" />
@@ -321,10 +317,6 @@
 
 			<imageTextures>
 				<imageTexture UNIT=0 texture="hkt" >
-					<ACCESS value="WRITE_ONLY" />
-					<LEVEL value=0 />
-				</imageTexture>
-				<imageTexture UNIT=1 texture="test" >
 					<ACCESS value="WRITE_ONLY" />
 					<LEVEL value=0 />
 				</imageTexture>
@@ -374,6 +366,9 @@
 		<material name ="fftVertical">
 			<shader name="butterflyV">
 				<values>
+					<valueof uniform="test"
+							 type="IMAGE_TEXTURE" context="CURRENT"
+							 id=2 component="UNIT" />
 					<valueof uniform="pingpong" 
 							 type="RENDERER" context="CURRENT" 
 							 component="pingpong" />
@@ -405,6 +400,10 @@
 					<ACCESS value="READ_WRITE" />
 					<LEVEL value=0 />
 				</imageTexture>
+				<imageTexture UNIT=2 texture="test" >
+					<ACCESS value="WRITE_ONLY" />
+					<LEVEL value=0 />
+				</imageTexture>
 			</imageTextures>
 		</material>	
 		
@@ -412,6 +411,7 @@
 		<material name="ocean">
 			<shader name=ocean >
 				<values>
+					
 					<valueof uniform="m_pvm" 
 							type="RENDERER" context="CURRENT" 
 							component="PROJECTION_VIEW_MODEL" />
@@ -498,7 +498,7 @@
 				<texture name="foam" UNIT=4 />
 				<texture name="sky" UNIT=5 />
 			</textures>
- 			<buffers>
+			 <buffers>
 				<buffer name="oceanInfo">
 					<TYPE value="SHADER_STORAGE" />
 					<BINDING_POINT value="0" />

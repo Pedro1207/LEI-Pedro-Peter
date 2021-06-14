@@ -715,7 +715,8 @@ void main(void) {
 	float z1, z2;
 
 	// clamp to prevent values equal to zero
-	vec4 z = clamp(texelFetch(texRnd, ivec2(texCoordV * width), 0), 0.000001, 1.0);
+	//vec4 z = clamp(texelFetch(texRnd, ivec2(texCoordV * width), 0), 0.000001, 1.0);
+	vec4 z = vec4(0.5, 0.5, 0.5, 0.5);
 	z1 = z.x-0.5;
 	z2 = z.y-0.5;
 
@@ -749,6 +750,7 @@ void main(void) {
 	hminusK.y = -hminusK.y;
 	
 	imageStore(h0k, pos ,vec4(hK, hminusK));
+	//imageStore(h0k, pos ,vec4(aux2, aux2, aux2, aux2));
     discard;
 
 	//imageStore(h0k, pos ,teste);

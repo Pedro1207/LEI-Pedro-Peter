@@ -9,7 +9,7 @@
 			
 			<constant name="SSIZE" value=512 /> 
 			<constant name="L2SIZE" value=9 /> 
-			<constant name="L2SIZE_PLUS1" value=3 /> 
+			<constant name="L2SIZE_PLUS1" value=10 /> 
 			<constant name="D8SIZE" value=64 />
 		</constants>
 		
@@ -160,19 +160,22 @@
 			</pass>
 		
 			<pass class="quad" name="pass_hkt">
+				<mode value="RUN_ONCE" />
 				<material name="fft_hkt" fromLibrary="Ocean" dimX="D8SIZE" dimY="D8SIZE" dimZ=1/>
 			</pass>
 		
 			<!-- inverse fourier -->
 			<!-- inverse FFT horizontal pass -->
-			<pass class="quad" name="ifftHorizontal"> 
+			<pass class="quad" name="ifftHorizontal">
+				<mode value="RUN_ONCE" /> 
 				<preScript file="scripts/fft.lua" script="resetInverseFFT" />
 				<testScript file="scripts/fft.lua" script="fft" TEST_MODE="RUN_WHILE" />
 				<material name="fftHorizontal" fromLibrary="Ocean" dimX="D8SIZE" dimY="D8SIZE" dimZ=1 />
 			</pass>
 			
 			<!-- inverse FFT vertical pass -->
-			<pass class="quad" name="ifftVertical"> 
+			<pass class="quad" name="ifftVertical">
+				<mode value="RUN_ONCE" />
 				<preScript file="scripts/fft.lua" script="resetInverseVertical" />
 				<testScript file="scripts/fft.lua" script="fft" TEST_MODE="RUN_WHILE" />
 				<material name="fftVertical" fromLibrary="Ocean" dimX="D8SIZE" dimY="D8SIZE" dimZ=1 />
