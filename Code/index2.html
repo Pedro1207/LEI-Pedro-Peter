@@ -29,87 +29,36 @@
     </style>
   </head>
   <body>
-    <div class="ladoEsquerdo">
     <div class="algoritmos">
       <div class="dropdown">
-        <label for="alg">Spectrum : </label>
-  
+        <button class="dropbtn">Algoritmos</button>
+        <div class="dropdown-content">
           <select id="alg">
             <option value="" selected disabled hidden>Choose here</option>
-            <option value = "2">JONSWAP</option>
-            <option value = "8">Ochi</option>
-            <option value = "7">Bretschneider</option>
-            <option value = "0">Phillips</option>
-            <option value = "1">Pierson-Moskowitz</option>
-            <option value = "3">Donelan</option>
-            <option value = "5">Unified</option>
-            <option value = "4">TMA</option>
-            <option value = "6">Pierson Moskowitz Hs</option>
-            <option value = "9">Ochi Hs</option>
+            <option value = "JONSWAP">JONSWAP</option>
+            <option value = "Ochi">Ochi</option>
+            <option value = "Bretschneider">Bretschneider</option>
           </select>
-       
+        </div>
       </div>
+      <canvas class="graph" id="graphs"></canvas>
     </div>
-    <div class="algoritmos1">
-      <div class="dropdown">
-    <label for="Dispersion">Dispersion : </label>
-    <select id="Dispersion">
-      <option value="" selected disabled hidden>Choose here</option>
-      <option value = "0">Deep</option>
-      <option value = "1">Shallow</option>
-      <option value = "2">CAPILLARY</option>
-    </select>
-  </div>
-     </div>
-
-    <div class="algoritmos2">
-      <div class="dropdown">
-    <label for="DirSpreading">Dir. Spreading : </label>
-    <select id="DirSpreading">
-      <option value="" selected disabled hidden>Choose here</option>
-      <option value = "0">CosinePower</option>
-      <option value = "1">Mitsuyasu</option>
-      <option value = "2">Hasselmann</option>
-      <option value = "3">Donelan-Banner</option>
-      <option value = "4">Horvath-Mitsuyasu</option>
-      <option value = "5">Horvath-Hasselmann</option>
-      <option value = "6">Horvath-Donelan-Banner</option>
-    </select>
-  </div>
-  </div>
-
-  <div class="algoritmos3">
-    <div class="dropdown">
-  <label for="randomDistribution">random Dist. : </label>
-  <select id="randomDistribution">
-    <option value="" selected disabled hidden>Choose here</option>
-    <option value = "1">Normal</option>
-    <option value = "0">Uniform</option>
-    <option value = "2">Log</option>
-    <option value = "3">Exp-Banner</option>
-  </select>
-</div>
-</div>
-
-    <div class="graficos">
-    <canvas class="graph" id="graphs"></canvas>
-  </div>
-  </div>
+   
     <canvas id="c"></canvas>
     <div class="slidecontainer">
       <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
       <script type="text/javascript">
           $(function () {
               $("#alg").change(function () {
-                  if ($(this).val() == "2") {
+                  if ($(this).val() == "JONSWAP") {
                       $("#optionJonh").show(); 
                       $("#optionOchi").hide();
                       $("#optionBret").hide();
-                  } else if($(this).val() == "8") {
+                  } else if($(this).val() == "Ochi") {
                       $("#optionOchi").show();
                       $("#optionJonh").hide();
                       $("#optionBret").hide();
-                  } else if ($(this).val() == "7") {
+                  } else if ($(this).val() == "Bretschneider") {
                       $("#optionBret").show();
                       $("#optionOchi").hide();
                       $("#optionJonh").hide();
@@ -127,13 +76,10 @@
 
       <label for="WindSpeed">WindSpeed : <output id="windSpeed">50</output></label>
       <input type="range" min="0" max="1000" value="50" class="slider" id="WindSpeed" oninput="windSpeed.value=value"></input>
-      
-      <label for="WindDirection">WindDirectio : <output id="windDirection1">1</output> <output id="windDirection2">0</output></label>
-      <div>
-        <input type="number" id="WindDirection" name="windDirection" min="0" max="1" value="1" step="0.001" oninput="windDirection1.value=value">
-        <input type="number" id="WindDirection" name="windDirection" min="0" max="1" value="0" step="0.001" oninput="windDirection2.value=value">
-      </div>   
 
+      <label for="WindDirection">WindDirection : <output id="windDirection">25</output></label>
+      <input type="range" min="0" max="100" value="25" class="slider" id="WindDirection" oninput="windDirection.value=value"></input>
+               
       <label for="sp. scale">sp. scale : <output id="spscale">1</output></label>
       <input type="range" min="0.1" max="100" value="1" class="slider" step="0.02" id="sp. scale" oninput="spscale.value=value"></input>
 
@@ -188,31 +134,43 @@
   </body>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.js" integrity="sha512-CAv0l04Voko2LIdaPmkvGjH3jLsH+pmTXKFoyh5TIimAME93KjejeP9j7wSeSRXqXForv73KUZGJMn8/P98Ifg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-  <script id="rangehtml" type="text/javascript">
-    const allRanges = document.querySelectorAll(".range-wrap");
-allRanges.forEach(wrap => {
-  const range = wrap.querySelector(".range");
-  const bubble = wrap.querySelector(".bubble");
-
-  range.addEventListener("input", () => {
-    setBubble(range, bubble);
-  });
-  setBubble(range, bubble);
-});
-
-function setBubble(range, bubble) {
-  const val = range.value;
-  const min = range.min ? range.min : 0;
-  const max = range.max ? range.max : 100;
-  const newVal = Number(((val - min) * 100) / (max - min));
-  bubble.innerHTML = val;
-
-  // Sorta magic numbers based on size of the native UI thumb
-  bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15}px))`;
-}
-  </script>
-
+  <script>
+    var ctx = document.getElementById('graphs').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+            datasets: [{
+                label: '# of Votes',
+                data: [12, 19, 3, 5, 2, 3],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    </script>
 
   <script id="vs" type="notjs">
     #version 300 es
@@ -1778,11 +1736,9 @@ function setBubble(range, bubble) {
   </script>
 
   
-  
 
   <script type="module">
     import * as twgl from "./twgl-full.module.js";
-    import * as spec from "./spectrum.js"
     const gl = document.querySelector("#c").getContext("webgl2");
 
     gl.getExtension("EXT_color_buffer_float");
@@ -1795,7 +1751,7 @@ function setBubble(range, bubble) {
     const width = 512;
     const height = 512;
     const level = 0;
-    const mapSize = 1024;
+    const mapSize = 256;
 
     var changed = true;
 
@@ -2088,77 +2044,19 @@ function setBubble(range, bubble) {
       sunAngles: [0, 10],
     }
 
-    //--------------------------------------------------------------------------------------------------------------
-    //----------------------------------------------------graph-----------------------------------------------------
-    //--------------------------------------------------------------------------------------------------------------
 
-    var ctx = document.getElementById('graphs').getContext('2d');
-
-    const DATA_COUNT = 200;
-    var inf = 0.00001;
-    var sup = 0.35;
-    var min = spec.dispersion(ocean_variables.dispersionMode, Math.sqrt(inf*inf*2));
-    var max = spec.dispersion(ocean_variables.dispersionMode, Math.sqrt(sup*sup*2));
-    var points = [];
-    var labels = [];
-    var step = (max - min) / DATA_COUNT;
-    for(var i = 0; i < DATA_COUNT; i++){
-      points.push(min + i * step);
-      labels.push((min + i * step).toFixed(2));
-    }
-
-    var dataArray = []
-        for(var i = 0; i < DATA_COUNT; i++){
-          dataArray.push(spec.JONSWAP_Hasselmann(points[i]));
-        }
-
-        var data = {
-          labels: labels,
-          datasets: [
-           {
-              label: "Spectrum",
-              data: dataArray,
-              pointBorderColor: "rgba(255, 255, 255, 0)",
-              pointBackgroundColor: "rgba(255, 255, 255, 0)",
-              borderColor: "rgba(220,20,20,1)",
-              cubicInterpolationMode: 'monotone',
-              tension: 0.4,
-            }
-          ]
-        }
-
-
-      var myChart = new Chart(ctx, {
-        type: 'line',
-        data: data,
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-          intersect: false,
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
-      });
-
-
-    function updateValue(slider, variable){
+    function render() {
+      //--------------------------------------------------------------------------------------------------------------
+      //------------------------------------------------------h0k-----------------------------------------------------
+      //--------------------------------------------------------------------------------------------------------------
+      function updateValue(slider, variable){
         var slider_value = document.getElementById(slider).value;
         if(slider_value != variable){
           changed = true;
         }
         return slider_value;
       }
-
-    function render() {
-      //--------------------------------------------------------------------------------------------------------------
-      //------------------------------------------------------h0k-----------------------------------------------------
-      //--------------------------------------------------------------------------------------------------------------
-            
+      
       ocean_variables.L = updateValue("l", ocean_variables.L);
       ocean_variables.windSpeed = updateValue("windSpeed", ocean_variables.windSpeed);
       //ocean_variables.windDir = updateValue("windDirection", ocean_variables.windDirection);
@@ -2179,89 +2077,49 @@ function setBubble(range, bubble) {
       ocean_variables.Ochi_Hs2 = updateValue("oh2", ocean_variables.Ochi_Hs2);
       ocean_variables.Ochi_wm1 = updateValue("ow1", ocean_variables.Ochi_wm1);
       ocean_variables.Ochi_wm2 = updateValue("ow2", ocean_variables.Ochi_wm2);
-      ocean_variables.spectrum = updateValue("alg", ocean_variables.spectrum);
-      ocean_variables.randomDistribution = updateValue("randomDistribution", ocean_variables.randomDistribution);
-      ocean_variables.directionalMode = updateValue("DirSpreading", ocean_variables.directionalMode);
-      ocean_variables.dispersionMode = updateValue("Dispersion", ocean_variables.dispersionMode);
-
 
 
       gl.disable(gl.DEPTH_TEST);
       gl.viewport(0, 0, width, height);
 
       if (changed) {
-        
-        spec.updateVariables(ocean_variables.windSpeed, ocean_variables.windDir, ocean_variables.L, ocean_variables.fetch, ocean_variables.depth, ocean_variables.swell, ocean_variables.Hs, ocean_variables.JONSWAP_gamma, ocean_variables.JONSWAP_sigmaA, ocean_variables.JONSWAP_sigmaB, ocean_variables.Ochi_lambda1, ocean_variables.Ochi_lambda2, ocean_variables.Ochi_wm1, ocean_variables.Ochi_wm2, ocean_variables.Ochi_Hs1, ocean_variables.Ochi_Hs2);
+        gl.useProgram(h0kprogram.program);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, h0k_fb);
 
-        var dataArray = []
-        for(var i = 0; i < DATA_COUNT; i++){
-          dataArray.push(spec.JONSWAP(points[i]));
-        }
+        const uniforms = {
+          width: ocean_variables.width,
+          L: ocean_variables.L,
+          windDir: ocean_variables.windDir,
+          windSpeed: ocean_variables.windSpeed,
+          depth: ocean_variables.depth,
+          randomDistribution: ocean_variables.randomDistribution,
+          spectrum: ocean_variables.spectrum,
+          dispersionMode: ocean_variables.dispersionMode,
+          directionalMode: ocean_variables.directionalMode,
+          spectrumScale: ocean_variables.spectrumScale,
+          fetch: ocean_variables.fetch,
+          swell: ocean_variables.swell,
+          Hs: ocean_variables.Hs,
+          JONSWAP_gamma: ocean_variables.JONSWAP_gamma,
+          JONSWAP_sigmaA: ocean_variables.JONSWAP_sigmaA,
+          JONSWAP_sigmaB: ocean_variables.JONSWAP_sigmaB,
+          Bretschneider_wm: ocean_variables.Bretschneider_wm,
+          Ochi_lambda1: ocean_variables.Ochi_lambda1,
+          Ochi_lambda2: ocean_variables.Ochi_lambda2,
+          Ochi_wm1: ocean_variables.Ochi_wm1,
+          Ochi_wm2: ocean_variables.Ochi_wm2,
+          Ochi_Hs1: ocean_variables.Ochi_Hs1,
+          Ochi_Hs2: ocean_variables.Ochi_Hs2,
+          propagate: ocean_variables.propagate,
+          texRnd: noise,
+        };
 
-        var data = {
-          labels: labels,
-          datasets: [
-           {
-              label: "Spectrum",
-              data: dataArray,
-              pointBorderColor: "rgba(255, 255, 255, 0)",
-              pointBackgroundColor: "rgba(255, 255, 255, 0)",
-              borderColor: "rgba(220,20,20,1)",
-              cubicInterpolationMode: 'monotone',
-              tension: 0.4,
-            }
-          ]
-        }
+        twgl.setUniforms(h0kprogram, uniforms);
+        twgl.setBuffersAndAttributes(gl, h0kprogram, bufferInfo);
+        twgl.drawBufferInfo(gl, bufferInfo);
 
-        myChart.data.datasets.forEach((dataset) => {
-          dataset.data.pop();
-        });
-
-        myChart.data.datasets.forEach((dataset) => {
-          dataset.data.push(data);
-        });
-        myChart.update();
-      
-
-      gl.useProgram(h0kprogram.program);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, h0k_fb);
-
-      const uniforms = {
-        width: ocean_variables.width,
-        L: ocean_variables.L,
-        windDir: ocean_variables.windDir,
-        windSpeed: ocean_variables.windSpeed,
-        depth: ocean_variables.depth,
-        randomDistribution: ocean_variables.randomDistribution,
-        spectrum: ocean_variables.spectrum,
-        dispersionMode: ocean_variables.dispersionMode,
-        directionalMode: ocean_variables.directionalMode,
-        spectrumScale: ocean_variables.spectrumScale,
-        fetch: ocean_variables.fetch,
-        swell: ocean_variables.swell,
-        Hs: ocean_variables.Hs,
-        JONSWAP_gamma: ocean_variables.JONSWAP_gamma,
-        JONSWAP_sigmaA: ocean_variables.JONSWAP_sigmaA,
-        JONSWAP_sigmaB: ocean_variables.JONSWAP_sigmaB,
-        Bretschneider_wm: ocean_variables.Bretschneider_wm,
-        Ochi_lambda1: ocean_variables.Ochi_lambda1,
-        Ochi_lambda2: ocean_variables.Ochi_lambda2,
-        Ochi_wm1: ocean_variables.Ochi_wm1,
-        Ochi_wm2: ocean_variables.Ochi_wm2,
-        Ochi_Hs1: ocean_variables.Ochi_Hs1,
-        Ochi_Hs2: ocean_variables.Ochi_Hs2,
-        propagate: ocean_variables.propagate,
-        texRnd: noise,
-      };
-
-      console.log("doing h0k stuff");
-
-      twgl.setUniforms(h0kprogram, uniforms);
-      twgl.setBuffersAndAttributes(gl, h0kprogram, bufferInfo);
-      twgl.drawBufferInfo(gl, bufferInfo);
-
-      changed = false;
-    }
+        changed = false;
+      }
 
       //--------------------------------------------------------------------------------------------------------------
       //---------------------------------------------------htk--------------------------------------------------------
